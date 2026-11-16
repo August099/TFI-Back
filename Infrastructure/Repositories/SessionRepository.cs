@@ -5,7 +5,8 @@ using Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using static System.Collections.Specialized.BitVector32;
+using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Infrastructure.Repositories
 {
@@ -17,39 +18,63 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public List<Session> GetAll()
+        public async Task<List<Session>> GetAllAsync()
         {
-            return _context.Sessions.ToList();
+            var sessions = await _context.Sessions.ToListAsync();
+            return sessions;
         }
 
-        public Session? GetById(int id)
+        public async Task<Session?> GetByIdAsync(int id)
         {
-            var session = _context.Sessions.FirstOrDefault(s => s.Id == id);
+            var session = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == id);
             if (session == null) return null;
 
             return session;
         }
 
-        public Session Add(Session session)
+        public async Task<Session?> GetByTokenAsync(string token)
+        {
+            var session = await _context.Sessions.FirstOrDefaultAsync(s => s.Token == token);
+            return session;
+        }
+
+        public async Task<List<Session>> GetActiveSessionsByUserIdAsync(int userId)
+        {
+            var sessions = await _context.Sessions
+                .Where(s => s.UserId == userId && s.RevocationDate > DateTime.Now)
+                .ToListAsync();
+
+            return sessions;
+        }
+
+        public async Task<Session?> AddAsync(Session session)
         {
             _context.Sessions.Add(session);
             return session;
         }
 
-        public Session Update(Session session)
+        public async Task<Session?> UpdateAsync(Session session)
         {
+            if (session == null)
+                return null;
+
             _context.Sessions.Update(session);
             return session;
         }
 
-        public Session? Delete(int id)
+        public async Task<Session?> DeleteAsync(int id)
         {
-            var session = GetById(id);
-            if (session == null) return null;
+            var session = await GetByIdAsync(id);
+            if (session == null) 
+                return null;
 
             _context.Sessions.Remove(session);
             return session;
         }
-
+        
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }
