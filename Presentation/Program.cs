@@ -15,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString,
+        sql => sql.EnableRetryOnFailure()));
 
 // 2) Repositorios
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
