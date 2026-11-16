@@ -15,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString,
+        sql => sql.EnableRetryOnFailure()));
 
 // 2) Repositorios
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
@@ -121,6 +122,12 @@ builder.Services.AddHttpClient(
     });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate(); // aplica las migraciones pendientes
+}
 
 // 8) Middlewares
 
