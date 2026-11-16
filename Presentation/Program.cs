@@ -1,24 +1,48 @@
+using Microsoft.EntityFrameworkCore;
+using Infrastructure.Persistence;
 using Application.Interfaces;
 using Application.Services;
-using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Presentation.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1) DbContext
-builder.Services.AddSingleton<ApplicationDbContext>();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString,
+        sql => sql.EnableRetryOnFailure()));
 
 // 2) Repositorios
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IClinicalRecordRepository, ClinicalRecordRepository>();
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IPetRepository, PetRepository>();
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
+builder.Services.AddScoped<IShiftEventRepository, ShiftEventRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 // 3) Servicios de aplicación
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IClinicalRecordService, ClinicalRecordService>();
+builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IShiftService, ShiftService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // 4) Configuración JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -89,9 +113,26 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// HttpClientFactory
+builder.Services.AddHttpClient(
+    "doghttpClient",
+    client =>
+    {
+        client.BaseAddress = new Uri("https://dog.ceo/api/breeds/image/random");
+    });
+
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate(); // aplica las migraciones pendientes
+}
+
 // 8) Middlewares
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

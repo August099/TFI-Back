@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Domain.Entities;
@@ -6,53 +6,37 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence
 {
-    public class ApplicationDbContext 
+    public class ApplicationDbContext : DbContext
     {
-        //public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        //    : base(options)
-        //{
-        //}
-
-        //public DbSet<User> User { get; set; }
-
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    base.OnModelCreating(modelBuilder);
-        //}
-public List<User> Users
-{
-    get;
-} = [
-        new User { 
-            Id = 1,
-            Name = "Patricio",
-            Dni = "416546",
-            Email = "jfdslk@fewf",
-            PasswordHash = "fhfkwef",
-            Telefone = "fwejkf",
-            State = "fnjofjkw",
-            BirthDate = new DateOnly(1995, 5, 12)
-        },
-        new User { 
-            Id = 2,
-            Name = "María",
-            Dni = "789123",
-            Email = "maria@example.com",
-            PasswordHash = "abc123xyz",
-            Telefone = "3415551234",
-            State = "Activo",
-            BirthDate = new DateOnly(1998, 8, 22)
-        },
-        new User { 
-            Id = 3,
-            Name = "Carlos",
-            Dni = "456789",
-            Email = "carlos@example.com",
-            PasswordHash = "hashsecure789",
-            Telefone = "3415555678",
-            State = "Activo",
-            BirthDate = new DateOnly(1990, 11, 3)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
         }
-    ];
+
+        public DbSet<Chat> Chats { get; set; }
+        public DbSet<ClinicalRecord> ClinicalRecords { get; set; }
+        public DbSet<Item> Items { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Pet> Pets { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
+        public DbSet<ReasonCancellation> ReasonCancellations { get; set; }
+        public DbSet<ReasonConsultation>  ReasonConsultations { get; set; }
+        public DbSet<Service> Services { get; set; }
+        public DbSet<ServiceVeterinary> ServiceVeterinaries { get; set; }
+        public DbSet<Session> Sessions { get; set; }
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<ShiftEvent> ShiftEvents { get; set; }
+        public DbSet<User> Users { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+            modelBuilder.Entity<Item>().Property(i => i.Price).HasPrecision(18, 2);
+            modelBuilder.Entity<Order>().Property(o => o.Total).HasPrecision(18, 2);
+            modelBuilder.Entity<OrderItem>().Property(oi => oi.UnitPrice).HasPrecision(18, 2);
+            modelBuilder.Entity<Service>().Property(s => s.Price).HasPrecision(18, 2);
+        }
     }
 }
