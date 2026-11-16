@@ -111,6 +111,14 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// HttpClientFactory
+builder.Services.AddHttpClient(
+    "doghttpClient",
+    client =>
+    {
+        client.BaseAddress = new Uri("https://dog.ceo/api/breeds/image/random");
+    });
+
 var app = builder.Build();
 
 // 8) Middlewares
