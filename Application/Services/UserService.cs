@@ -1,9 +1,12 @@
 ﻿using Application.Interfaces;
 using Application.Models;
+using Application.Models.User;
 using Domain.Entities;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -14,112 +17,138 @@ namespace Application.Services
         {
             _userRepository = userRepository;
         }
-        public List<UserDTO> GetAll()
+        public async Task <List<UserDTO>> GetAllAsync()
         {
-            var users = _userRepository.GetAll();
-            return users.Select(u => new UserDTO
+            var Users = await _userRepository.GetAllAsync();
+            return Users.Select(u => new UserDTO
             {
                 Id = u.Id,
+                Rol = u.Rol,
                 Dni = u.Dni,
                 Name = u.Name,
                 Email = u.Email,
-                Telefone = u.Telefone,
+                Telephone = u.Telephone,
                 State = u.State,
                 BirthDate = u.BirthDate
             }).ToList();
         }
 
-        public UserDTO? GetById(int id)
+        public async Task<UserDTO?> GetByIdAsync(int id)
         {
-            var user = _userRepository.GetById(id);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user == null) return null;
 
             return new UserDTO
             {
                 Id = user.Id,
+                Rol = user.Rol,
                 Dni = user.Dni,
                 Name = user.Name,
                 Email = user.Email,
-                Telefone = user.Telefone,
+                Telephone = user.Telephone,
                 State = user.State,
                 BirthDate = user.BirthDate
             };
         }
 
-        public UserDTO? GetByName(string name)
+        public async Task<UserDTO?> GetByNameAsync(string name)
         {
-            var user = _userRepository.GetByName(name);
+            var user = await _userRepository.GetByNameAsync(name);
             if (user == null) return null;
 
             return new UserDTO
             {
                 Id = user.Id,
+                Rol = user.Rol,
                 Dni = user.Dni,
                 Name = user.Name,
                 Email = user.Email,
-                Telefone = user.Telefone,
+                Telephone = user.Telephone,
                 State = user.State,
                 BirthDate = user.BirthDate
             };
         }
         
-        public UserDTO? Add(CreateUserDTO user)
+        public async Task<UserDTO?> AddAsync(CreateUserDTO user)
         {
-            var newUser = new UserDTO
+            if (user == null) return null;
+
+            var newUser = new User
             {
-                Id = 4,
-                Dni = user.Dni,
+                Rol = user.Rol,
+                Dni= user.Dni,
                 Name = user.Name,
                 Email = user.Email,
-                Telefone = user.Telefone,
+                Telephone = user.Telephone,
                 State = user.State,
                 BirthDate = user.BirthDate
             };
 
-            return newUser;
+            var addedUser = await _userRepository.AddAsync(newUser);
+
+            if (addedUser == null) return null;
+
+            var newUserDTO = new UserDTO
+            {
+                Id = addedUser.Id,
+                Rol = addedUser.Rol,
+                Dni = addedUser.Dni,
+                Name = addedUser.Name,
+                Email = addedUser.Email,
+                Telephone = addedUser.Telephone,
+                State = addedUser.State,
+                BirthDate = addedUser.BirthDate
+            };
+
+            return newUserDTO;
         }
 
-        public UserDTO? Update(UserDTO user)
+        public async Task<UserDTO?> UpdateAsync(UserDTO user)
         {
-            var updateUser = _userRepository.GetById(user.Id);
+            var updateUser = await _userRepository.GetByIdAsync(user.Id);
             if (updateUser == null) return null;
 
-            updateUser.Id = user.Id;
+            updateUser.Rol = user.Rol;
             updateUser.Dni = user.Dni;
             updateUser.Name = user.Name;
             updateUser.Email = user.Email;
-            updateUser.Telefone = user.Telefone;
+            updateUser.Telephone = user.Telephone;
             updateUser.State = user.State;
             updateUser.BirthDate = user.BirthDate;
+            
+            await _userRepository.UpdateAsync(updateUser);
 
             return new UserDTO
             {
-                Id= updateUser.Id,
+                Id = updateUser.Id,
+                Rol = updateUser.Rol,
                 Dni= updateUser.Dni,
                 Name = updateUser.Name,
                 Email = updateUser.Email,
-                Telefone = updateUser.Telefone,
-                State= updateUser.State,
-                BirthDate= updateUser.BirthDate
+                Telephone = updateUser.Telephone,
+                State = updateUser.State,
+                BirthDate = updateUser.BirthDate
             };
         }
 
-        public UserDTO? Delete(int id)
+        public async Task<UserDTO?> DeleteAsync(int id)
         {
-            var user = _userRepository.GetById(id);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user == null) return null;
+
+            await _userRepository.DeleteAsync(id);
 
             return new UserDTO
             {
                 Id = user.Id,
+                Rol = user.Rol,
                 Dni = user.Dni,
                 Name = user.Name,
                 Email = user.Email,
-                Telefone = user.Telefone,
+                Telephone = user.Telephone,
                 State = user.State,
                 BirthDate = user.BirthDate
             };
         }
-
     }
 }
