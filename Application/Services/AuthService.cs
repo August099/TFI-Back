@@ -14,13 +14,11 @@ namespace Application.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IRoleRepository _roleRepository;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IConfiguration configuration)
+        public AuthService(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
-            _roleRepository = roleRepository;
             _configuration = configuration;
         }
 
@@ -31,24 +29,25 @@ namespace Application.Services
             if (existingUser != null)
                 throw new ConflictException("El email ya se encuentra registrado.");
 
-            // 2) Crear nuevo usuario con contraseña hasheada
+            // 2) Crear nuevo usuario mapeando todos los campos y hasheando la contraseña
             var user = new User
             {
+                Dni = request.Dni,
                 Name = request.Name,
                 Email = request.Email,
-                Telefone = request.Telefone,
+                Telephone = request.Telephone,
+                State = true,
+                BirthDate = request.BirthDate,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Rol = request.Rol
             };
 
-            // 3) Guardar usuario
+            // 3) Guardar usuario en la base de datos
             await _userRepository.AddAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            // 4) Asignar rol por defecto si existe (ajustar según tu lógica)
-            var defaultRole = await _roleRepository.GetByNameAsync("Cliente");
-
-            // 5) Generar token y devolver respuesta
-            return await GenerateToken(user);
+            // 4) Generar token y devolver respuesta
+            return GenerateToken(user);
         }
 
         public async Task<AuthResponseDTO> Login(LoginRequestDTO request)
@@ -64,31 +63,23 @@ namespace Application.Services
                 throw new InvalidCredentialException();
 
             // 3) Generar token
-            return await GenerateToken(user);
+            return GenerateToken(user);
         }
 
-        private async Task<AuthResponseDTO> GenerateToken(User user)
+        private AuthResponseDTO GenerateToken(User user)
         {
-            // 1) Obtener roles del usuario
-            var roles = await _roleRepository.GetRolesByUserIdAsync(user.Id);
-
-            // 2) Crear claims
+            // 1) Crear claims usando el rol específico del usuario
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim(ClaimTypes.GivenName, user.Name ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, user.Rol.ToString())
             };
 
-            // Agregar roles como claims
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role.Name));
-            }
-
-            // 3) Obtener configuración JWT
-            var jwtKey = _configuration["Jwt:Key"] ?? throw new Exception("Jwt:Key no está configurado");
+            // 2) Obtener configuración JWT
+            var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key no está configurado");
             var jwtIssuer = _configuration["Jwt:Issuer"];
             var jwtAudience = _configuration["Jwt:Audience"];
             var jwtExpires = int.Parse(_configuration["Jwt:ExpiresInMinutes"] ?? "60");
@@ -98,7 +89,7 @@ namespace Application.Services
 
             var expiresAt = DateTime.UtcNow.AddMinutes(jwtExpires);
 
-            // 4) Crear token
+            // 3) Crear token
             var token = new JwtSecurityToken(
                 issuer: jwtIssuer,
                 audience: jwtAudience,
@@ -109,14 +100,14 @@ namespace Application.Services
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // 5) Armar respuesta
+            // 4) Armar respuesta
             return new AuthResponseDTO
             {
                 Token = tokenString,
                 ExpiresAt = expiresAt,
                 Email = user.Email ?? string.Empty,
-                FullName = $"{user.Name}".Trim(),
-                Roles = roles.Select(r => r.Name).ToList()
+                FullName = user.Name?.Trim() ?? string.Empty,
+                Rol = user.Rol
             };
         }
     }

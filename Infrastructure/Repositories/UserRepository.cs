@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Microsoft.EntityFrameworkCore;
 using Application.Interfaces;
 
 namespace Infrastructure.Repositories
@@ -20,98 +20,52 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public List<User> GetAll()
+        public Task<List<User>> GetAllAsync()
         {
-            return _context.Users;
+            return _context.Users.ToListAsync();
         }
 
-        public User? GetById(int id)
+        public Task<User?> GetByIdAsync(int id)
         {
-            return _context.Users.FirstOrDefault(u => u.Id == id);
+            return _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public User? GetByName(string name)
+        public Task<User?> GetByNameAsync(string name)
         {
-            return _context.Users.FirstOrDefault(u => u.Name == name);
+            return _context.Users.FirstOrDefaultAsync(u => u.Name == name);
         }
 
-        public User? GetByEmail(string email)
+        public Task<User?> GetByEmailAsync(string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
+            return _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
-        public async Task<User?> GetByEmailAsync(string email)
+        public async Task<User?> AddAsync(User user)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
-            return await Task.FromResult(user);
-        }
-
-
-        public User Add(User user)
-        {
-            _context.Users.Add(user);
+            await _context.Users.AddAsync(user);
             return user;
         }
 
-        public async Task AddAsync(User user)
+        public async Task<User?> UpdateAsync(User user)
         {
-            _context.Users.Add(user);
-            await Task.CompletedTask;
+            if (user == null) return null;
+
+            _context.Users.Update(user);
+            return user;
+        }
+
+        public async Task<User?> DeleteAsync(int id)
+        {
+            var user = await GetByIdAsync(id);
+            if (user == null) return null;
+
+            _context.Users.Remove(user);
+            return user;
         }
 
         public async Task SaveChangesAsync()
         {
-            await Task.CompletedTask;
+            await _context.SaveChangesAsync();
         }
-
-
-        public User Update(User user)
-        {
-            var index = _context.Users.FindIndex(u => u.Id == user.Id);
-
-            if (index == -1)
-            {
-                return user;
-            }
-
-            _context.Users[index] = user;
-            return user;
-        }
-
-        public User? Delete(int id)
-        {
-            var user = _context.Users.FirstOrDefault(u => u.Id == id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-            }
-            return user;
-        }
-
-        //public async Task<List<User>> GetAllAsync()
-        //{
-        //    return await _context.User.ToListAsync();
-        //}
-
-        //public async Task<User?> GetByIdAsync(int id)
-        //{
-        //    return await _context.User.FindAsync(id);
-        //}
-
-        //public async Task AddAsync(User entity)
-        //{
-        //    await _context.User.AddAsync(entity);
-        //    await _context.SaveChangesAsync();
-        //}
-        //public void Update(User entity)
-        //{
-        //    _context.User.Update(entity);
-        //    _context.SaveChanges();
-        //}
-        //public void Delete(User entity)
-        //{
-        //    _context.User.Remove(entity);
-        //    _context.SaveChanges();
-        //}
     }
 }
