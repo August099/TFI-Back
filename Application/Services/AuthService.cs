@@ -6,6 +6,8 @@ using Application.Interfaces;
 using Domain.Entities;
 using System.Security.Claims;
 using System.Text;
+using System.Security.Authentication;
+using Domain.Exceptions;
 
 namespace Application.Services
 {
@@ -27,7 +29,7 @@ namespace Application.Services
             // 1) Verificar si ya existe un usuario con ese email
             var existingUser = await _userRepository.GetByEmailAsync(request.Email);
             if (existingUser != null)
-                throw new Exception("El email ya se encuentra registrado.");
+                throw new ConflictException("El email ya se encuentra registrado.");
 
             // 2) Crear nuevo usuario con contraseña hasheada
             var user = new User
@@ -54,12 +56,12 @@ namespace Application.Services
             // 1) Buscar usuario por email
             var user = await _userRepository.GetByEmailAsync(request.Email);
             if (user == null)
-                throw new UnauthorizedAccessException("Credenciales inválidas.");
+                throw new InvalidCredentialException();
 
             // 2) Verificar contraseña con BCrypt
             bool isValidPassword = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
             if (!isValidPassword)
-                throw new UnauthorizedAccessException("Credenciales inválidas.");
+                throw new InvalidCredentialException();
 
             // 3) Generar token
             return await GenerateToken(user);
