@@ -1,8 +1,6 @@
 ﻿using Application.Interfaces;
-using Application.Models;
 using Application.Models.Dog;
 using Infrastructure.Models;
-using System.Net;
 using System.Net.Http.Json;
 
 namespace Infrastructure.Services
