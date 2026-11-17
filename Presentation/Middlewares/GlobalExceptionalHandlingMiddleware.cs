@@ -1,4 +1,5 @@
 using Domain.Exceptions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Presentation.Middlewares;
@@ -33,6 +34,16 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
                 statusCode = StatusCodes.Status401Unauthorized;
                 message = exception.Message;
                 break;
+            
+            case ConflictException:
+                statusCode = StatusCodes.Status409Conflict;
+                message = exception.Message;
+                break;
+
+            case BadRequestException:
+                statusCode = StatusCodes.Status400BadRequest;
+                message = exception.Message;
+                break;
 
             default:
                 logger.LogError(exception, "Error no controlado");
@@ -40,11 +51,6 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
                 message = "Ocurrió un error inesperado.";
                 break;
         }
-
-        context.Response.ContentType = "application/json";
-
-        context.Response.StatusCode = statusCode;
-        await context.Response.WriteAsJsonAsync(new { status = statusCode, error = message });
 
         context.Response.StatusCode = statusCode;
         await context.Response.WriteAsJsonAsync(new { status = statusCode, error = message });
