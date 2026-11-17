@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Models.Service;
 using Domain.Entities;
+using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -59,6 +60,8 @@ namespace Application.Services
         public async Task<ServiceDTO?> AddAsync(CreateServiceDTO service)
         {
             if (service == null) return null;
+            if (service.Price < 0 || service.Duration < 0)
+                throw new BadRequestException("El precio y/o la duración no pueden ser negativos");
 
             var newService = new Service
             {
@@ -85,6 +88,9 @@ namespace Application.Services
 
         public async Task<ServiceDTO?> UpdateAsync(ServiceDTO service)
         {
+            if (service.Price < 0 || service.Duration < 0)
+                throw new BadRequestException("El precio y/o la duración no pueden ser negativos");
+
             var updateService = await _serviceRepository.GetByIdAsync(service.Id);
             if (updateService == null) return null;
 

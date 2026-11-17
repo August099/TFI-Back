@@ -108,13 +108,13 @@ namespace Application.Services
 
         public async Task<RatingDTO?> UpdateAsync(RatingDTO rating)
         {
-            var updateRating = await _ratingRepository.GetByIdAsync(rating.Id);
-
-            if (updateRating == null) return null;
-            if(rating.Score < 1 || rating.Score > 5)
+            if (rating.Score < 1 || rating.Score > 5)
             {
                 throw new BadRequestException("El puntaje debe estar entre 1 y 5");
             }
+            
+            var updateRating = await _ratingRepository.GetByIdAsync(rating.Id);
+            if (updateRating == null) return null;
 
             updateRating.Id = rating.Id;
             updateRating.ClientId = rating.ClientId;
