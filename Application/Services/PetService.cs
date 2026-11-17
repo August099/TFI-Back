@@ -2,7 +2,6 @@
 using Application.Models;
 using Application.Models.Pet;
 using Domain.Entities;
-using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Text;

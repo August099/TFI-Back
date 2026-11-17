@@ -115,8 +115,8 @@ namespace Application.Services
             };
 
             var addedChat = await _chatRepository.AddAsync(newChat);
-            if (addedChat == null || addedChat.Id == 0) return null;
             await _chatRepository.SaveChangesAsync();
+            if (addedChat == null || addedChat.Id == 0) return null;
 
             return new ChatDTO
             {

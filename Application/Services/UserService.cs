@@ -85,6 +85,7 @@ namespace Application.Services
             };
 
             var addedUser = await _userRepository.AddAsync(newUser);
+            await _userRepository.SaveChangesAsync();
 
             if (addedUser == null) return null;
 
@@ -117,6 +118,7 @@ namespace Application.Services
             updateUser.BirthDate = user.BirthDate;
             
             await _userRepository.UpdateAsync(updateUser);
+            await _userRepository.SaveChangesAsync();
 
             return new UserDTO
             {
@@ -137,6 +139,7 @@ namespace Application.Services
             if (user == null) return null;
 
             await _userRepository.DeleteAsync(id);
+            await _userRepository.SaveChangesAsync();
 
             return new UserDTO
             {

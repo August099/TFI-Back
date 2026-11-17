@@ -5,6 +5,8 @@ namespace Application.Interfaces
 {
     public interface IDogServices
     {
+        Task<bool> BreedExistsAsync(string breed);
+        Task<bool> SubBreedExistsAsync(string breed, string subBreed);
         Task<List<BreedDTO>> GetBreedListAsync();
         Task<List<SubBreedDTO>> GetSubBreedListAsync(string breed);
         Task<DogImageDTO?> GetRandomDogAsync();
