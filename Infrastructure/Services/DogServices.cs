@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Models;
 using Application.Models.Dog;
+using Infrastructure.Models;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -17,7 +18,12 @@ namespace Infrastructure.Services
         }
 
         public async Task<List<BreedDTO>> GetBreedListAsync()
-            => await _httpClient.GetFromJsonAsync<List<BreedDTO>>("breeds/list/all") ?? [];
+        {
+            var response = await _httpClient
+                .GetFromJsonAsync<DogApiResponse<Dictionary<string, List<string>>>>("breeds/list/all");
+
+            return response?.Message.Select(kv => new BreedDTO { Name = kv.Key, SubBreeds = kv.Value }).ToList() ?? [];
+        }
 
         public async Task<List<SubBreedDTO>> GetSubBreedListAsync(string breed)
             => await _httpClient.GetFromJsonAsync<List<SubBreedDTO>>($"breed/{breed}/list") ?? [];
