@@ -12,9 +12,52 @@ namespace Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
 
+        private static Dictionary<string, List<string>>? _sharedBreedsCache;
+
         public DogServices(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient("dogs");
+        }
+
+        public async Task<bool> BreedExistsAsync(string breed)
+        {
+            // si todavia no se cargaron las razas llama a la api
+            if (_sharedBreedsCache == null)
+            {
+                var response = await _httpClient
+                    .GetFromJsonAsync<DogApiResponse<Dictionary<string, List<string>>>>("breeds/list/all");
+
+                _sharedBreedsCache = response?.Message ?? new Dictionary<string, List<string>>();
+            }
+
+            // valida si la raza existe en el diccionario
+            return _sharedBreedsCache.ContainsKey(breed.ToLower());
+        }
+
+        public async Task<bool> SubBreedExistsAsync(string breed, string subBreed)
+        {
+            // si todavia no se cargaron las razas llama a la api
+            if (_sharedBreedsCache == null)
+            {
+                var response = await _httpClient.GetFromJsonAsync<DogApiResponse<Dictionary<string, List<string>>>>("breeds/list/all");
+                _sharedBreedsCache = response?.Message ?? new Dictionary<string, List<string>>();
+            }
+
+            // normalizamos los nombres
+            string normalizedBreed = breed.ToLower();
+            string normalizedSubBreed = subBreed.ToLower();
+
+            // valida si la raza existe en el diccionario
+            if (!_sharedBreedsCache.ContainsKey(normalizedBreed))
+            {
+                return false;
+            }
+
+            // obtiene la lista de subrazas
+            List<string> subBreedsList = _sharedBreedsCache[normalizedBreed];
+
+            // valida si la subraza existe en la lista de subrazas
+            return subBreedsList.Contains(normalizedSubBreed);
         }
 
         public async Task<List<BreedDTO>> GetBreedListAsync()
