@@ -115,10 +115,11 @@ builder.Services.AddSwaggerGen(c =>
 
 // HttpClientFactory
 builder.Services.AddHttpClient(
-    "doghttpClient",
+    "dogs",
     client =>
     {
-        client.BaseAddress = new Uri("https://dog.ceo/api/breeds/image/random");
+        client.BaseAddress = new Uri(builder.Configuration["ExternalApis:Dogs"]!);
+        client.Timeout = TimeSpan.FromSeconds(10);
     });
 
 var app = builder.Build();
