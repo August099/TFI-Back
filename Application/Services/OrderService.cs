@@ -2,6 +2,7 @@
 using Application.Models.Order;
 using Application.Models.OrderItem;
 using Domain.Entities;
+using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -47,12 +48,12 @@ namespace Application.Services
                 var itemDB = await _itemRepository.GetByIdAsync(item.ItemId);
                 if (itemDB == null)
                 {
-                    throw new Exception($"El Item con el id: {item.ItemId} no existe");
+                    throw new NotFoundException($"El Item con el id: {item.ItemId} no existe");
                 }
 
                 if(itemDB.Stock < item.Amount)
                 {
-                    throw new Exception($"El stock del Item {itemDB.Name} no es suficiente, Stock {itemDB.Stock}");
+                    throw new ConflictException($"El stock del Item {itemDB.Name} no es suficiente, Stock {itemDB.Stock}");
                 }
 
                 // resto la cantidad del pedido al producto y guardo el stock restante

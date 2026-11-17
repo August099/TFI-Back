@@ -40,6 +40,11 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<Glo
                 message = exception.Message;
                 break;
 
+            case BadRequestException:
+                statusCode = StatusCodes.Status400BadRequest;
+                message = exception.Message;
+                break;
+
             default:
                 logger.LogError(exception, "Error no controlado");
                 statusCode = StatusCodes.Status500InternalServerError;
