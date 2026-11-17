@@ -65,9 +65,9 @@ namespace Application.Services
         public async Task<ItemDTO?> AddAsync(CreateItemDTO item)
         {
             if (item == null) return null;
-            if(item.Stock < 0)
+            if(item.Stock < 0 || item.Price < 0)
             {
-                throw new BadRequestException("El stock no puede ser negativo");
+                throw new BadRequestException("El stock y/o precio no puede ser negativo");
             }
 
             var newItem = new Item
@@ -80,6 +80,7 @@ namespace Application.Services
             };
 
             var addedItem = await _itemRepository.AddAsync(newItem);
+            await _itemRepository.SaveChangesAsync();
             if (addedItem == null) return null;
 
             return new ItemDTO
@@ -106,6 +107,7 @@ namespace Application.Services
             updateItem.Description = item.Description;
 
             await _itemRepository.UpdateAsync(updateItem);
+            await _itemRepository.SaveChangesAsync();
 
             return new ItemDTO
             {
@@ -125,6 +127,7 @@ namespace Application.Services
             if (item == null) return null;
 
             await _itemRepository.DeleteAsync(id);
+            await _itemRepository.SaveChangesAsync();
 
             return new ItemDTO
             {   
