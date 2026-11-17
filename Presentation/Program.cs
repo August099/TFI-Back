@@ -123,10 +123,11 @@ builder.Services.AddHttpClient(
 
 var app = builder.Build();
 
+// Aplica las migraciones pendientes al iniciar la aplicación
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate(); // aplica las migraciones pendientes
+    db.Database.Migrate();
 }
 
 // 8) Middlewares
