@@ -16,7 +16,7 @@ namespace Domain.Entities
 
     public enum ChatStatus
     {
-        Activo,
-        Finalizado
+        Finalizado = 0,
+        Activo = 1,
     }
 }
