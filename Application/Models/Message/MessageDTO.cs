@@ -10,5 +10,6 @@ namespace Application.Models.Message
         public int ChatId { get; set; }
         public string Text { get; set; } = string.Empty;
         public DateTime SendHour { get; set; } = DateTime.Now;
+        public int SenderId { get; internal set; }
     }
 }

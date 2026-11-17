@@ -21,84 +21,27 @@ namespace Application.Services
         public async Task<List<ChatDTO>> GetAllAsync()
         {
             var chats = await _chatRepository.GetAllAsync();
-            return chats.Select(c => new ChatDTO
-            {
-                Id = c.Id,
-                ClientId = c.ClientId,
-                ReceptionistId = c.ReceptionistId,
-                Status = c.Status,
-                CreationDate = c.CreationDate,
-                Messages = c.Messages.Select(m => new MessageDTO
-                {
-                    Id = m.Id,
-                    ChatId = m.ChatId,
-                    SendHour = m.SendHour,
-                    Text = m.Text,
-                }).ToList()
-            }).ToList();
+            return chats.Select(MapToDTO).ToList();
         }
 
         public async Task<ChatDTO?> GetByIdAsync(int id)
         {
             var chat = await _chatRepository.GetByIdAsync(id);
-
             if (chat == null) return null;
 
-            return new ChatDTO
-            {
-                Id = chat.Id,
-                ClientId = chat.ClientId,
-                ReceptionistId = chat.ReceptionistId,
-                Status = chat.Status,
-                CreationDate = chat.CreationDate,
-                Messages = chat.Messages.Select(m => new MessageDTO
-                {
-                    Id = m.Id,
-                    ChatId = m.ChatId,
-                    SendHour = m.SendHour,
-                    Text = m.Text
-                }).ToList()
-            };
+            return MapToDTO(chat);
         }
 
         public async Task<List<ChatDTO>> GetByClientIdAsync(int clientId)
         {
             var chats = await _chatRepository.GetByClientIdAsync(clientId);
-            return chats.Select(c => new ChatDTO
-            {
-                Id = c.Id,
-                ClientId = c.ClientId,
-                ReceptionistId = c.ReceptionistId,
-                Status = c.Status,
-                CreationDate = c.CreationDate,
-                Messages = c.Messages.Select(m => new MessageDTO
-                {
-                    Id = m.Id,
-                    ChatId = m.ChatId,
-                    SendHour = m.SendHour,
-                    Text = m.Text
-                }).ToList()
-            }).ToList();
+            return chats.Select(MapToDTO).ToList();
         }
 
         public async Task<List<ChatDTO>> GetByRecepcionistIdAsync(int receptionistId)
         {
             var chats = await _chatRepository.GetByRecepcionistIdAsync(receptionistId);
-            return chats.Select(c => new ChatDTO
-            {
-                Id = c.Id,
-                ClientId = c.ClientId,
-                ReceptionistId = c.ReceptionistId,
-                Status = c.Status,
-                CreationDate = c.CreationDate,
-                Messages = c.Messages.Select(m => new MessageDTO
-                {
-                    Id = m.Id,
-                    ChatId = m.ChatId,
-                    SendHour = m.SendHour,
-                    Text = m.Text
-                }).ToList()
-            }).ToList();
+            return chats.Select(MapToDTO).ToList();
         }
 
         public async Task<ChatDTO?> AddAsync(CreateChatDTO chat)
@@ -118,15 +61,7 @@ namespace Application.Services
             await _chatRepository.SaveChangesAsync();
             if (addedChat == null || addedChat.Id == 0) return null;
 
-            return new ChatDTO
-            {
-                Id = addedChat.Id,
-                ClientId = addedChat.ClientId,
-                ReceptionistId = addedChat.ReceptionistId,
-                Status = addedChat.Status,
-                CreationDate = addedChat.CreationDate,
-                Messages = new List<MessageDTO>()
-            };
+            return MapToDTO(addedChat);
         }
 
         public async Task<ChatDTO?> UpdateAsync(ChatDTO chat)
@@ -141,28 +76,13 @@ namespace Application.Services
             {
                 SendHour = m.SendHour,
                 Text = m.Text,
+                SenderId = m.SenderId
             }).ToList();
 
             await _chatRepository.UpdateAsync(updateChat);
             await _chatRepository.SaveChangesAsync();
 
-            var newChatDTO = new ChatDTO
-            {
-                Id = updateChat.Id,
-                ClientId = updateChat.ClientId,
-                ReceptionistId = updateChat.ReceptionistId,
-                Status = updateChat.Status,
-                CreationDate = updateChat.CreationDate,
-                Messages = updateChat.Messages.Select(m => new MessageDTO
-                {
-                    Id = m.Id,
-                    ChatId = m.ChatId,
-                    SendHour = m.SendHour,
-                    Text = m.Text,
-                }).ToList()
-            };
-
-            return newChatDTO;
+            return MapToDTO(updateChat);
         }
 
         public async Task<ChatDTO?> DeleteAsync(int id)
@@ -173,20 +93,27 @@ namespace Application.Services
             await _chatRepository.DeleteAsync(id);
             await _chatRepository.SaveChangesAsync();
 
+            return MapToDTO(chat);
+        }
+
+        // mapear chat a chatDTO
+        private static ChatDTO MapToDTO(Chat c)
+        {
             return new ChatDTO
             {
-                Id = chat.Id,
-                ClientId = chat.ClientId,
-                ReceptionistId = chat.ReceptionistId,
-                Status = chat.Status,
-                CreationDate = chat.CreationDate,
-                Messages = chat.Messages.Select(m => new MessageDTO
+                Id = c.Id,
+                ClientId = c.ClientId,
+                ReceptionistId = c.ReceptionistId,
+                Status = c.Status,
+                CreationDate = c.CreationDate,
+                Messages = c.Messages?.Select(m => new MessageDTO
                 {
                     Id = m.Id,
                     ChatId = m.ChatId,
-                    Text = m.Text,
                     SendHour = m.SendHour,
-                }).ToList()
+                    Text = m.Text,
+                    SenderId = m.SenderId
+                }).ToList() ?? new List<MessageDTO>()
             };
         }
     }

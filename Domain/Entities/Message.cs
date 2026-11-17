@@ -10,5 +10,6 @@ namespace Domain.Entities
         public int ChatId { get; set; }
         public string Text { get; set; } = string.Empty;
         public DateTime SendHour { get; set; }
+        public int SenderId { get; set; }
     }
 }
