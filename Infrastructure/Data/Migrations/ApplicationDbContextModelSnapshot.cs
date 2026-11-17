@@ -133,6 +133,9 @@ namespace Infrastructure.Data.Migrations
                     b.Property<DateTime>("SendHour")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
