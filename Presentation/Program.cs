@@ -1,13 +1,14 @@
-using Microsoft.EntityFrameworkCore;
-using Infrastructure.Persistence;
 using Application.Interfaces;
 using Application.Services;
+using Infrastructure.Persistence;
 using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 using Presentation.Middlewares;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,9 @@ builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDogServices, DogServices>();
+
+
 
 // 4) Configuración JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -115,10 +119,11 @@ builder.Services.AddSwaggerGen(c =>
 
 // HttpClientFactory
 builder.Services.AddHttpClient(
-    "doghttpClient",
+    "dogs",
     client =>
     {
-        client.BaseAddress = new Uri("https://dog.ceo/api/breeds/image/random");
+        client.BaseAddress = new Uri(builder.Configuration["ExternalApis:Dogs"]!);
+        client.Timeout = TimeSpan.FromSeconds(10);
     });
 
 var app = builder.Build();
