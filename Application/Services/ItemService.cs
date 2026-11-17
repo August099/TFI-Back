@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Models.Item;
 using Domain.Entities;
+using Domain.Exceptions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -66,7 +67,7 @@ namespace Application.Services
             if (item == null) return null;
             if(item.Stock < 0)
             {
-                throw new Exception("El stock no puede ser negativo");
+                throw new BadRequestException("El stock no puede ser negativo");
             }
 
             var newItem = new Item

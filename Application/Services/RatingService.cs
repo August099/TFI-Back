@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Domain.Exceptions;
 
 namespace Application.Services
 {
@@ -77,7 +78,7 @@ namespace Application.Services
         {
             if(rating.Score < 1 || rating.Score > 5)
             {
-                throw new Exception("El puntaje debe estar entre 1 y 5");
+                throw new BadRequestException("El puntaje debe estar entre 1 y 5");
             }
 
             var newRating = new Rating
@@ -112,7 +113,7 @@ namespace Application.Services
             if (updateRating == null) return null;
             if(rating.Score < 1 || rating.Score > 5)
             {
-                throw new Exception("El puntaje debe estar entre 1 y 5");
+                throw new BadRequestException("El puntaje debe estar entre 1 y 5");
             }
 
             updateRating.Id = rating.Id;
