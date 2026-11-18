@@ -27,7 +27,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderDTO>> GetByIdAsync([FromRoute] int id)
+        public async Task<ActionResult<OrderDTO>> GetById([FromRoute] int id)
         {
             var order = await _orderService.GetByIdAsync(id);
             if (order == null) 
@@ -73,7 +73,7 @@ namespace Presentation.Controllers
                 return BadRequest($"La orden no pudo ser creada");
 
             return CreatedAtAction(
-                actionName: nameof(GetByIdAsync),
+                actionName: nameof(GetById),
                 routeValues: new { id = createdOrder.Id },
                 value: createdOrder
             );

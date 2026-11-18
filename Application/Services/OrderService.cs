@@ -3,11 +3,7 @@ using Application.Models.Order;
 using Application.Models.OrderItem;
 using Domain.Entities;
 using Domain.Exceptions;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Application.Services
 {
@@ -82,8 +78,7 @@ namespace Application.Services
                     UnitPrice = itemDB.Price // precio del Item en la base de datos
                 });
             }
-            await _itemRepository.SaveChangesAsync();
-
+            
             var newOrder = new Order
             {
                 ClientId = order.ClientId,
@@ -95,9 +90,11 @@ namespace Application.Services
                 Total = total,
                 Items = orderItems
             };
-
+            
             var addedOrder = await _orderRepository.AddAsync(newOrder);
+            
             await _orderRepository.SaveChangesAsync();
+
             if (addedOrder == null || addedOrder.Id == 0)
                 return null;
 
