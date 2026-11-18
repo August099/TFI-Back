@@ -2,6 +2,7 @@
 using Application.Models.Auth;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using System.Runtime.CompilerServices;
 
 namespace Presentation.Controllers
 {
@@ -10,7 +11,6 @@ namespace Presentation.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
         public AuthController(IAuthService authService)
         {
             _authService = authService;
@@ -22,8 +22,8 @@ namespace Presentation.Controllers
         {
             try
             {
-                var result = await _authService.Register(request);
-                return Ok(result);
+                await _authService.Register(request);
+                return NoContent();
             }
             catch (Exception ex)
             {

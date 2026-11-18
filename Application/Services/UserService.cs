@@ -75,12 +75,10 @@ namespace Application.Services
 
             var newUser = new User
             {
-                Rol = user.Rol,
                 Dni= user.Dni,
                 Name = user.Name,
                 Email = user.Email,
                 Telephone = user.Telephone,
-                State = user.State,
                 BirthDate = user.BirthDate
             };
 
