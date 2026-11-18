@@ -2,9 +2,11 @@
 using Application.Models.Chat;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Presentation.Controllers
 {
+    [Authorize(Roles = "Cliente,Admin,Recepcionista")]
     [ApiController]
     [Route("api/[controller]")]
     public class ChatController : ControllerBase
@@ -77,6 +79,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<ChatDTO>> Delete([FromRoute] int id)
         {
             var chat = await _chatService.DeleteAsync(id);

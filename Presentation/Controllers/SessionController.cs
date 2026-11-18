@@ -1,9 +1,11 @@
 ﻿using Application.Interfaces;
 using Application.Models.Session;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class SessionController : ControllerBase
@@ -15,6 +17,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<SessionDTO>>> Get()
         {
             var sessions = await _sessionService.GetAllAsync();
@@ -22,6 +25,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<SessionDTO>> GetById([FromRoute] int id)
         {
             var session = await _sessionService.GetByIdAsync(id);
@@ -32,6 +36,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("token/{token}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<SessionDTO?>> GetByTokenAsync(string token)
         {
             var session = await _sessionService.GetByTokenAsync(token);
@@ -39,6 +44,7 @@ namespace Presentation.Controllers
         }
         
         [HttpGet("user/{userId}/active")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<List<SessionDTO>>> GetActiveSessionsByUserIdAsync(int userId)
         {
             var sessions = await _sessionService.GetActiveSessionsByUserIdAsync(userId);
@@ -75,6 +81,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<SessionDTO>> Delete([FromRoute] int id)
         {
             var session = await _sessionService.DeleteAsync(id);

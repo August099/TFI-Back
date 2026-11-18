@@ -1,9 +1,13 @@
 ﻿using Application.Interfaces;
 using Application.Models.Order;
+using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
@@ -15,6 +19,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<List<OrderDTO>>> GetAllAsync()
         {
             var orders = await _orderService.GetAllAsync();
@@ -31,8 +36,37 @@ namespace Presentation.Controllers
             return Ok(order);
         }
 
+        [HttpGet("client/{clientId}")]
+        [Authorize(Roles = "Admin,Recepcionista,Cliente")]
+        public async Task<ActionResult<List<OrderDTO>>> GetByClientIdAsync([FromRoute] int clientId)
+        {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // para que no traiga otras ordenes de otro cliente
+            if (userRole == "Cliente")
+            {
+                if (userIdClaim == null || int.Parse(userIdClaim) != clientId)
+                {
+                    return Forbid(); // error 403
+                }
+            }
+
+            var orders = await _orderService.GetByClientIdAsync(clientId);
+            return Ok(orders);
+        }
+
+        [HttpGet("status/{state}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
+        public async Task<ActionResult<List<OrderDTO>>> GetByStateAsync([FromRoute] OrderStatus state)
+        {
+            var orders = await _orderService.GetByStateAsync(state);
+            return Ok(orders);
+        }
+
         [HttpPost]
-        public async Task<ActionResult<OrderDTO>> Add(CreateOrderDTO order)
+        [Authorize(Roles = "Admin,Recepcionista,Cliente")]
+        public async Task<ActionResult<OrderDTO>> Add([FromBody] CreateOrderDTO order)
         {
             var createdOrder = await _orderService.AddAsync(order);
             if (createdOrder == null) 
@@ -46,6 +80,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<OrderDTO>> Update([FromBody] OrderDTO order, [FromRoute] int id)
         {
             if (order == null) 
@@ -61,6 +96,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<OrderDTO>> Delete([FromRoute] int id)
         {
             var order = await _orderService.DeleteAsync(id);

@@ -11,7 +11,6 @@ namespace Application.Interfaces
         Task <List<UserDTO>> GetAllAsync();
         Task <UserDTO?> GetByIdAsync(int id);
         Task <UserDTO?> GetByNameAsync(string name);
-        Task <UserDTO?> AddAsync(CreateUserDTO createUser);
         Task <UserDTO?> UpdateAsync(UserDTO updateUser);
         Task <UserDTO?> DeleteAsync(int id);
     }

@@ -1,9 +1,12 @@
 ﻿using Application.Interfaces;
 using Application.Models.Service;
+using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ServiceController : ControllerBase
@@ -39,6 +42,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Recepcionista,Veterinario")]
         public async Task<ActionResult<ServiceDTO>> Add([FromBody] CreateServiceDTO service)
         {
             var createdService = await _serviceService.AddAsync(service);
@@ -53,6 +57,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista,Veterinario")]
         public async Task<ActionResult<ServiceDTO>> Update([FromBody] ServiceDTO service, [FromRoute] int id)
         {
             if (service == null) 
@@ -68,6 +73,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista,Veterinario")]
         public async Task<ActionResult<ServiceDTO>> Delete([FromRoute] int id)
         {
             var service = await _serviceService.DeleteAsync(id);
