@@ -68,6 +68,25 @@ namespace Presentation.Controllers
         [Authorize(Roles = "Admin,Recepcionista,Cliente")]
         public async Task<ActionResult<OrderDTO>> Add([FromBody] CreateOrderDTO order)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userRole == "Cliente")
+            {
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return BadRequest("No se pudo identificar al usuario autenticado.");
+
+                order.ClientId = int.Parse(userIdClaim);
+            }
+            else
+            {
+                // por si es admin o recepcionista
+                if (order.ClientId <= 0)
+                {
+                    return BadRequest("Debe especificar un ClientId válido para la orden.");
+                }
+            }
+
             var createdOrder = await _orderService.AddAsync(order);
             if (createdOrder == null) 
                 return BadRequest($"La orden no pudo ser creada");
