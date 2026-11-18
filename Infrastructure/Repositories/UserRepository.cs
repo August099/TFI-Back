@@ -42,13 +42,17 @@ namespace Infrastructure.Repositories
 
         public async Task<User?> AddAsync(User user)
         {
+            if (user == null)
+                return null;
+
             await _context.Users.AddAsync(user);
             return user;
         }
 
         public async Task<User?> UpdateAsync(User user)
         {
-            if (user == null) return null;
+            if (user == null) 
+                return null;
 
             _context.Users.Update(user);
             return user;

@@ -7,6 +7,5 @@ namespace Domain.Entities
     {
         public int Id { get; set; }
         public int ClientId { get; set; }
-        public IReadOnlyCollection<Item> Items { get; set; } = new List<Item>();
     }
 }

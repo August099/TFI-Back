@@ -12,6 +12,8 @@ namespace Infrastructure.Persistence
         {
         }
 
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<ClinicalRecord> ClinicalRecords { get; set; }
         public DbSet<Item> Items { get; set; }
