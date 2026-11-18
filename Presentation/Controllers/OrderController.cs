@@ -93,7 +93,7 @@ namespace Presentation.Controllers
                 return BadRequest($"La orden no pudo ser creada");
 
             return CreatedAtAction(
-                actionName: nameof(GetByIdAsync),
+                actionName: nameof(GetById),
                 routeValues: new { id = createdOrder.Id },
                 value: createdOrder
             );

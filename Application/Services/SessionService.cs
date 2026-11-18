@@ -19,15 +19,7 @@ namespace Application.Services
         {
             var sessions = await _sessionRepository.GetAllAsync();
 
-            return sessions.Select(s => new SessionDTO
-            {
-                Id = s.Id,
-                UserId = s.UserId,
-                Token = s.Token,
-                EmissionDate = s.EmissionDate,
-                RevocationDate = s.RevocationDate,
-                ExpirationDate = s.ExpirationDate
-            }).ToList();
+            return sessions.Select(MapDTO).ToList();
         }
 
         public async Task<SessionDTO?> GetByIdAsync(int id)
@@ -35,15 +27,7 @@ namespace Application.Services
             var session = await _sessionRepository.GetByIdAsync(id);
             if (session == null) return null;
 
-            return new SessionDTO
-            {
-                Id = session.Id,
-                UserId = session.UserId,
-                Token = session.Token,
-                EmissionDate = session.EmissionDate,
-                RevocationDate = session.RevocationDate,
-                ExpirationDate = session.ExpirationDate
-            };
+            return MapDTO(session);
         }
 
         public async Task<SessionDTO?> GetByTokenAsync(string token)
@@ -52,29 +36,13 @@ namespace Application.Services
             if (session == null) 
                 return null;
 
-            return new SessionDTO
-            {
-                Id = session.Id,
-                UserId = session.UserId,
-                Token = session.Token,
-                EmissionDate = session.EmissionDate,
-                RevocationDate = session.RevocationDate,
-                ExpirationDate = session.ExpirationDate
-            };
+            return MapDTO(session);
         }
 
         public async Task<List<SessionDTO>> GetActiveSessionsByUserIdAsync(int userId)
         {
             var sessions = await _sessionRepository.GetActiveSessionsByUserIdAsync(userId);
-            return sessions.Select(s => new SessionDTO
-            {
-                Id = s.Id,
-                UserId = s.UserId,
-                Token = s.Token,
-                EmissionDate = s.EmissionDate,
-                RevocationDate = s.RevocationDate,
-                ExpirationDate = s.ExpirationDate
-            }).ToList();
+            return sessions.Select(MapDTO).ToList();
         }
 
         public async Task<SessionDTO?> AddAsync(CreateSessionDTO session)
@@ -96,16 +64,7 @@ namespace Application.Services
             if (addedSession == null) 
                 return null;
 
-            var newSessionDTO = new SessionDTO
-            {
-                Id = addedSession.Id,
-                UserId = addedSession.UserId,
-                Token = addedSession.Token,
-                EmissionDate = addedSession.EmissionDate,
-                RevocationDate = addedSession.RevocationDate,
-                ExpirationDate= addedSession.ExpirationDate,
-            };
-            return newSessionDTO;
+            return MapDTO(addedSession);
         }
 
         public async Task<SessionDTO?> UpdateAsync(SessionDTO session)
@@ -122,15 +81,7 @@ namespace Application.Services
             await _sessionRepository.UpdateAsync(updateSession);
             await _sessionRepository.SaveChangesAsync();
 
-            return new SessionDTO
-            {
-                Id = updateSession.Id,
-                UserId = updateSession.UserId,
-                Token = updateSession.Token,
-                EmissionDate = updateSession.EmissionDate,
-                RevocationDate = updateSession.RevocationDate,
-                ExpirationDate = updateSession.ExpirationDate,
-            };
+            return MapDTO(updateSession);
         }
 
         public async Task<SessionDTO?> DeleteAsync(int id)
@@ -141,14 +92,19 @@ namespace Application.Services
             await _sessionRepository.DeleteAsync(id);
             await _sessionRepository.SaveChangesAsync();
 
+            return MapDTO(session);
+        }
+
+        private static SessionDTO MapDTO(Session s)
+        {
             return new SessionDTO
             {
-                Id = session.Id,
-                UserId = session.UserId,
-                Token = session.Token,
-                EmissionDate = session.EmissionDate,
-                RevocationDate = session.RevocationDate,
-                ExpirationDate = session.ExpirationDate,
+                Id = s.Id,
+                UserId = s.UserId,
+                Token = s.Token,
+                EmissionDate = s.EmissionDate,
+                RevocationDate = s.RevocationDate,
+                ExpirationDate = s.ExpirationDate
             };
         }
     }
