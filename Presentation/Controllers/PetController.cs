@@ -1,10 +1,12 @@
 ﻿using Application.Interfaces;
 using Application.Models;
 using Application.Models.Pet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PetController : ControllerBase
@@ -33,6 +35,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Cliente,Recepcionista")]
         public async Task <ActionResult<PetDTO>> Add([FromBody] CreatePetDTO pet)
         {
             var createdPet = await _petService.AddAsync(pet);
@@ -47,6 +50,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Cliente,Recepcionista")]
         public async Task<ActionResult<PetDTO>> Update([FromBody] PetDTO pet, [FromRoute] int id)
         {
             if (pet == null) 
@@ -62,6 +66,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<PetDTO>> Delete([FromRoute] int id)
         {
             var pet = await _petService.DeleteAsync(id);

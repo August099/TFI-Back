@@ -35,6 +35,17 @@ namespace Application.Services
             return MapDTO(order);
         }
 
+        public async Task<List<OrderDTO>> GetByClientIdAsync(int clientId)
+        {
+            var orders = await _orderRepository.GetByClientIdAsync(clientId);
+            return orders.Select(MapDTO).ToList();
+        }
+        public async Task<List<OrderDTO>> GetByStateAsync(OrderStatus status)
+        {
+            var orders = await _orderRepository.GetByStateAsync(status);
+            return orders.Select(MapDTO).ToList();
+        }
+
         public async Task<OrderDTO?> AddAsync(CreateOrderDTO order)
         {
             if (order == null || order.Items == null) return null;
@@ -98,20 +109,10 @@ namespace Application.Services
             var updateOrder = await _orderRepository.GetByIdAsync(order.Id); 
             if(updateOrder == null) return null;
         
-            updateOrder.ClientId = order.ClientId;
             updateOrder.DeliveryDate = order.DeliveryDate;
             updateOrder.PreparationDate = order.PreparationDate;
             updateOrder.PaymentMethod = order.PaymentMethod;
             updateOrder.Status = order.Status;
-            updateOrder.Total = order.Total;
-            updateOrder.Items = order.Items.Select(oi => new OrderItem
-            {
-                Id = oi.Id,
-                OrderId = oi.OrderId,
-                ItemId = oi.ItemId,
-                Amount = oi.Amount,
-                UnitPrice = oi.UnitPrice
-            }).ToList();
 
             await _orderRepository.UpdateAsync(updateOrder);
             await _orderRepository.SaveChangesAsync();

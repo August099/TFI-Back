@@ -1,20 +1,26 @@
 ﻿using Application.Interfaces;
 using Application.Models.ClinicalRecord;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ClinicalRecordController : ControllerBase
     {
         private readonly IClinicalRecordService _clinicalRecordService;
-        public ClinicalRecordController(IClinicalRecordService clinicalRecordService)
+        private readonly IPetService _petService;
+        public ClinicalRecordController(IClinicalRecordService clinicalRecordService, IPetService petService)
         {
             _clinicalRecordService = clinicalRecordService;
+            _petService = petService;
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista")]
         public async Task<ActionResult<List<ClinicalRecordDTO>>> Get()
         {
             var clinicalRecords = await _clinicalRecordService.GetAllAsync();
@@ -22,6 +28,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista")]
         public async Task<ActionResult<ClinicalRecordDTO>> GetById([FromRoute] int id)
         {
             var clinicalRecord = await _clinicalRecordService.GetByIdAsync(id);
@@ -32,13 +39,33 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("pet/{petId}")]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista,Cliente")]
         public async Task<ActionResult<List<ClinicalRecordDTO>>> GetByPetIdAsync([FromRoute] int petId)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userRole == "Cliente")
+            {
+                if (userIdClaim == null) return Unauthorized();
+                int currentUserId = int.Parse(userIdClaim);
+
+                var pet = await _petService.GetByIdAsync(petId);
+                if (pet == null)
+                    return NotFound("La mascota no existe");
+
+                if (pet.ClientId != currentUserId)
+                {
+                    return Forbid();
+                }
+            }
+
             var clinicalRecords = await _clinicalRecordService.GetByPetIdAsync(petId);
             return Ok(clinicalRecords);
         }
 
         [HttpGet("veterinary/{veterinaryId}")]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista")]
         public async Task<ActionResult<List<ClinicalRecordDTO>>> GetByVeterinaryIdAsync([FromRoute] int veterinaryId)
         {
             var clinicalRecords = await _clinicalRecordService.GetByVeterinaryIdAsync(veterinaryId);
@@ -46,6 +73,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista")]
         public async Task<ActionResult<ClinicalRecordDTO>> Add([FromBody] CreateClinicalRecordDTO clinicalRecord)
         {
             var createdClinicalRecord = await _clinicalRecordService.AddAsync(clinicalRecord);
@@ -60,6 +88,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista")]
         public async Task<ActionResult<ClinicalRecordDTO>> Update([FromBody] ClinicalRecordDTO clinicalRecord, [FromRoute] int id)
         {
             if (clinicalRecord == null) 
@@ -75,6 +104,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista")]
         public async Task<ActionResult<ClinicalRecordDTO>> Delete([FromRoute] int id)
         {
             var clinicalRecord = await _clinicalRecordService.DeleteAsync(id);

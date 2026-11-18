@@ -1,11 +1,13 @@
 ﻿using Application.Interfaces;
 using Application.Models;
 using Application.Models.Dog;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DogController : ControllerBase

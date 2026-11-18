@@ -1,10 +1,12 @@
 ﻿using Application.Interfaces;
 using Application.Models.Item;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ItemController : ControllerBase
@@ -31,7 +33,7 @@ namespace Presentation.Controllers
             return Ok(item);
         }
 
-        [HttpGet("(available)")]
+        [HttpGet("available")]
         public async Task<ActionResult<List<ItemDTO>>> GetAvailableItems()
         {
             var availableItems = await _itemService.GetAvailableItemsAsync();
@@ -39,7 +41,8 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ItemDTO>> AddAsync(CreateItemDTO item)
+        [Authorize(Roles = "Admin,Recepcionista")]
+        public async Task<ActionResult<ItemDTO>> AddAsync([FromBody] CreateItemDTO item)
         {
             var createdItem = await _itemService.AddAsync(item);
             if (createdItem == null) 
@@ -53,6 +56,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<ItemDTO>> Update([FromBody] ItemDTO item, [FromRoute] int id)
         {
             if (item == null) 
@@ -68,6 +72,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Recepcionista")]
         public async Task<ActionResult<ItemDTO>> DeleteAsync(int id)
         {
             var item = await _itemService.DeleteAsync(id);

@@ -19,9 +19,9 @@ namespace Domain.Entities
 
     public enum Role
     {
-        Cliente,
-        Veterinario,
-        Recepcionista,
-        Admin
+        Cliente = 0,
+        Veterinario = 1,
+        Recepcionista = 2,
+        Admin = 3
     }
 }
