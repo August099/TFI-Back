@@ -29,7 +29,7 @@ namespace Presentation.Controllers
             bool exists = await _dogServices.BreedExistsAsync(breed);
             if (!exists)
             {
-                return BadRequest("La raza no existe.");
+                return NotFound("La raza no existe.");
             }
 
             return Ok(await _dogServices.GetSubBreedListAsync(breed));
@@ -54,7 +54,7 @@ namespace Presentation.Controllers
             bool exists = await _dogServices.BreedExistsAsync(breed);
             if (!exists)
             {
-                return BadRequest("La raza no existe.");
+                return NotFound("La raza no existe.");
             }
 
             return Ok(await _dogServices.GetDogsByBreedAsync(breed));
@@ -66,7 +66,7 @@ namespace Presentation.Controllers
             bool exists = await _dogServices.BreedExistsAsync(breed);
             if (!exists)
             {
-                return BadRequest("La raza no existe.");
+                return NotFound("La raza no existe.");
             }
 
             return Ok(await _dogServices.GetRandomDogByBreedAsync(breed));
@@ -78,7 +78,7 @@ namespace Presentation.Controllers
             bool exists = await _dogServices.BreedExistsAsync(breed);
             if (!exists)
             {
-                return BadRequest("La raza no existe.");
+                return NotFound("La raza no existe.");
             }
 
             if (cantidad < 1)
@@ -93,13 +93,13 @@ namespace Presentation.Controllers
             bool breedExists = await _dogServices.BreedExistsAsync(breed);
             if (!breedExists)
             {
-                return BadRequest("La raza no existe.");
+                return NotFound("La raza no existe.");
             }
 
             bool subBreedExists = await _dogServices.SubBreedExistsAsync(breed, subBreed);
             if (!subBreedExists)
             {
-                return BadRequest("La subraza no existe.");
+                return NotFound("La subraza no existe.");
             }
             return Ok(await _dogServices.GetDogsBySubBreedAsync(breed, subBreed));
         }
@@ -110,13 +110,13 @@ namespace Presentation.Controllers
             bool breedExists = await _dogServices.BreedExistsAsync(breed);
             if (!breedExists)
             {
-                return BadRequest("La raza no existe.");
+                return NotFound("La raza no existe.");
             }
 
             bool subBreedExists = await _dogServices.SubBreedExistsAsync(breed, subBreed);
             if (!subBreedExists)
             {
-                return BadRequest("La subraza no existe.");
+                return NotFound("La subraza no existe.");
             }
             return Ok(await _dogServices.GetRandomDogBySubBreedAsync(breed, subBreed));
         }
@@ -127,13 +127,13 @@ namespace Presentation.Controllers
             bool breedExists = await _dogServices.BreedExistsAsync(breed);
             if (!breedExists)
             {
-                return BadRequest("La raza no existe.");
+                return NotFound("La raza no existe.");
             }
 
             bool subBreedExists = await _dogServices.SubBreedExistsAsync(breed, subBreed);
             if (!subBreedExists)
             {
-                return BadRequest("La subraza no existe.");
+                return NotFound("La subraza no existe.");
             }
 
             if (cantidad < 1)
