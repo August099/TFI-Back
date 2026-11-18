@@ -131,7 +131,6 @@ namespace Application.Services
 
             return MapDTO(order);
         }
-
         private static OrderDTO MapDTO(Order o)
         {
             return new OrderDTO

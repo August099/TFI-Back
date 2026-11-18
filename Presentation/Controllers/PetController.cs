@@ -84,12 +84,29 @@ namespace Presentation.Controllers
         [Authorize(Roles = "Admin,Cliente,Recepcionista")]
         public async Task<ActionResult<PetDTO>> Update([FromBody] PetDTO pet, [FromRoute] int id)
         {
-
-
             if (pet == null) 
                 return BadRequest("Los datos de la mascota están incompletos");
             if (pet.Id != id) 
                 return BadRequest("El Id de la ruta no coincide con el de la mascota");
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var dbPet = await _petService.GetByIdAsync(id);
+            if (dbPet == null)
+                return NotFound($"No se encontró la mascota con el Id: {id}");
+
+            if (userRole == "Cliente")
+            {
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return BadRequest("No se pudo identificar al usuario");
+
+                if (dbPet.ClientId != int.Parse(userIdClaim))
+                    return Forbid();
+            }
+
+            if (pet.ClientId != dbPet.ClientId)
+                return BadRequest("No se puede cambiar el dueño de la mascota");
 
             var updatePet = await _petService.UpdateAsync(pet);
             if (updatePet == null) 
