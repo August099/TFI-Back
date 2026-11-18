@@ -20,9 +20,9 @@ namespace Domain.Entities
     }
     public enum OrderStatus
     {
-        PendientePago,
-        Pagado,
-        Entregado,
-        Cancelado
+        PendientePago = 0,
+        Pagado = 1,
+        Entregado = 2,
+        Cancelado = 3
     }
 }
