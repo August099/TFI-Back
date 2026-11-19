@@ -2,6 +2,7 @@
 using Application.Models;
 using Application.Models.Pet;
 using Domain.Entities;
+using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -42,6 +43,11 @@ namespace Application.Services
             if (pet == null)
                 return null;
 
+            if (!Gender.IsDefined(pet.Gender))
+            {
+                throw new BadRequestException($"El genero: {pet.Gender} no es válido.");
+            }
+
             var newPet = new Pet
             {
                 ClientId = pet.ClientId,
@@ -63,7 +69,12 @@ namespace Application.Services
         public async Task<PetDTO?> UpdateAsync(PetDTO pet)
         {
             var updatePet = await _petRepository.GetByIdAsync(pet.Id);
-            if (updatePet == null) return null;
+            if (updatePet == null) throw new NotFoundException("La mascota no existe."); ;
+
+            if (!Gender.IsDefined(pet.Gender))
+            {
+                throw new BadRequestException($"El genero: {pet.Gender} no es válido.");
+            }
 
             updatePet.ClientId = pet.ClientId;
             updatePet.Name = pet.Name;

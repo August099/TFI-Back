@@ -42,7 +42,7 @@ namespace Presentation.Controllers
             return Ok(cart);
         }
 
-        [HttpGet("cart")]
+        [HttpGet()]
         [Authorize(Roles = "Cliente,Veterinario")]
         public async Task<ActionResult<CartDTO>> GetMyCart()
         {

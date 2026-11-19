@@ -23,7 +23,7 @@ namespace Presentation.Controllers
             try
             {
                 await _authService.Register(request);
-                return NoContent();
+                return CreatedAtAction(nameof(Register), value: request);
             }
             catch (Exception ex)
             {
