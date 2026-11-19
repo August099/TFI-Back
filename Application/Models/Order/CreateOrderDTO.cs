@@ -10,6 +10,5 @@ namespace Application.Models.Order
         public DateTime? PreparationDate { get; set; } = null;
         public PaymentMethods PaymentMethod { get; set; } = PaymentMethods.Efectivo;
         public OrderStatus Status { get; set; } = OrderStatus.PendientePago;
-        public List<CreateOrderItemDTO> Items { get; set;} = new List<CreateOrderItemDTO>();
     }
 }
