@@ -62,7 +62,7 @@ namespace Infrastructure.Repositories
 
         public async Task<Chat?> DeleteAsync(int id)
         {
-            var chat = await GetByIdAsync(id);
+            var chat = await _context.Chats.FindAsync(id);
             if (chat == null) return null;
 
             _context.Chats.Remove(chat);

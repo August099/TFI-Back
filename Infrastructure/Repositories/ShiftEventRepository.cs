@@ -16,14 +16,22 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task <ShiftEvent> GetByIdAsync(int id)
+        {
+            var shiftEvent = await _context.ShiftEvents.FirstOrDefaultAsync(se => se.Id == id);
+            return shiftEvent;
+        }
+
         public async Task<List<ShiftEvent>> GetByShiftIdAsync(int shiftId)
         {
-            return await _context.ShiftEvents.Where(se => se.ShiftId == shiftId).ToListAsync();
+            var shiftEvents = await _context.ShiftEvents.Where(se => se.ShiftId == shiftId).ToListAsync();
+            return shiftEvents;
         }
 
         public async Task<List<ShiftEvent>> GetByUserIdAsync(int userId)
         {
-            return await _context.ShiftEvents.Where(se => se.UserId == userId).ToListAsync();
+            var shiftEvents = await _context.ShiftEvents.Where(se => se.UserId == userId).ToListAsync();
+            return shiftEvents;
         }
 
         public async Task<ShiftEvent?> AddAsync(ShiftEvent shiftEvent)

@@ -46,10 +46,9 @@ builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
+builder.Services.AddScoped<IShiftEventService, ShiftEventService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDogServices, DogServices>();
-
-
 
 // 4) Configuración JWT
 var jwtKey = builder.Configuration["Jwt:Key"];

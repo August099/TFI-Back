@@ -8,7 +8,9 @@ namespace Application.Interfaces
 {
     public interface IShiftEventService
     {
-        public Task<List<ShiftEventDTO>> GetByShiftIdAsync(int shiftId);
-        public Task<List<ShiftEventDTO>> GetByUserIdAsync(int userId);
+        Task<ShiftEventDTO> GetByIdAsync(int id);
+        Task<List<ShiftEventDTO>> GetByShiftIdAsync(int shiftId);
+        Task<List<ShiftEventDTO>> GetByUserIdAsync(int userId);
+        Task<ShiftEventDTO?> AddAsync(CreateShiftEventDTO shiftEvent);
     }
 }
