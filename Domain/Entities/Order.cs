@@ -11,7 +11,7 @@ namespace Domain.Entities
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public DateTime? DeliveryDate { get; set; } = null;
         public DateTime? PreparationDate { get; set; } = null;
-        public string PaymentMethod { get; set; } = string.Empty;
+        public PaymentMethods PaymentMethod { get; set; } = PaymentMethods.Efectivo;
         public OrderStatus Status { get; set; } = OrderStatus.PendientePago;
         public decimal Total { get; set; }
 
@@ -20,9 +20,16 @@ namespace Domain.Entities
     }
     public enum OrderStatus
     {
-        PendientePago,
-        Pagado,
-        Entregado,
-        Cancelado
+        PendientePago = 0,
+        Pagado = 1,
+        Entregado = 2,
+        Cancelado = 3
+    }
+
+    public enum PaymentMethods
+    {
+        Efectivo = 0,
+        Tarjeta = 1,
+        Transferencia = 2,
     }
 }

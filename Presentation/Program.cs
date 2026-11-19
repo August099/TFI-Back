@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Services;
+using Domain.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -20,6 +21,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         sql => sql.EnableRetryOnFailure()));
 
 // 2) Repositorios
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IClinicalRecordRepository, ClinicalRecordRepository>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
@@ -98,7 +101,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingresá 'Bearer' + espacio + tu token JWT.\r\n\r\nEjemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        Description = "Ingresá tu token JWT.\r\n\r\nEjemplo: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement

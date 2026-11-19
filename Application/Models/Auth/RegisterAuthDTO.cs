@@ -1,7 +1,4 @@
 ﻿using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Models.Auth
 {
@@ -12,8 +9,6 @@ namespace Application.Models.Auth
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Telephone { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
         public DateOnly BirthDate { get; set; }
-        public Role Rol { get; set; } = Role.Cliente;
     }
 }

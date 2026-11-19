@@ -18,6 +18,14 @@ namespace Presentation.Controllers
             _shiftService = shiftService;
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin,Veterinario,Recepcionista")]
+        public async Task<ActionResult<ShiftDTO>> Get([FromRoute] int id)
+        {
+            var shifts = await _shiftService.GetAllAsync();
+            return Ok(shifts);
+        }
+
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Veterinario,Recepcionista,Cliente")]
         public async Task<ActionResult<ShiftDTO>> GetById([FromRoute] int id)

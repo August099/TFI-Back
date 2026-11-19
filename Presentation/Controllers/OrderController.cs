@@ -20,14 +20,14 @@ namespace Presentation.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<List<OrderDTO>>> GetAllAsync()
+        public async Task<ActionResult<List<OrderDTO>>> GetAll()
         {
             var orders = await _orderService.GetAllAsync();
             return Ok(orders);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderDTO>> GetByIdAsync([FromRoute] int id)
+        public async Task<ActionResult<OrderDTO>> GetById([FromRoute] int id)
         {
             var order = await _orderService.GetByIdAsync(id);
             if (order == null) 
@@ -38,7 +38,7 @@ namespace Presentation.Controllers
 
         [HttpGet("client/{clientId}")]
         [Authorize(Roles = "Admin,Recepcionista,Cliente")]
-        public async Task<ActionResult<List<OrderDTO>>> GetByClientIdAsync([FromRoute] int clientId)
+        public async Task<ActionResult<List<OrderDTO>>> GetByClientId([FromRoute] int clientId)
         {
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -58,7 +58,7 @@ namespace Presentation.Controllers
 
         [HttpGet("status/{state}")]
         [Authorize(Roles = "Admin,Recepcionista")]
-        public async Task<ActionResult<List<OrderDTO>>> GetByStateAsync([FromRoute] OrderStatus state)
+        public async Task<ActionResult<List<OrderDTO>>> GetByState([FromRoute] OrderStatus state)
         {
             var orders = await _orderService.GetByStateAsync(state);
             return Ok(orders);
@@ -68,12 +68,32 @@ namespace Presentation.Controllers
         [Authorize(Roles = "Admin,Recepcionista,Cliente")]
         public async Task<ActionResult<OrderDTO>> Add([FromBody] CreateOrderDTO order)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // para que el cliente no asigne la orden a otro usuario
+            if (userRole == "Cliente")
+            {
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return BadRequest("No se pudo identificar al usuario autenticado.");
+
+                order.ClientId = int.Parse(userIdClaim);
+            }
+            else
+            {
+                // por si es admin o recepcionista
+                if (order.ClientId <= 0)
+                {
+                    return BadRequest("Debe especificar un ClientId válido para la orden.");
+                }
+            }
+
             var createdOrder = await _orderService.AddAsync(order);
             if (createdOrder == null) 
                 return BadRequest($"La orden no pudo ser creada");
 
             return CreatedAtAction(
-                actionName: nameof(GetByIdAsync),
+                actionName: nameof(GetById),
                 routeValues: new { id = createdOrder.Id },
                 value: createdOrder
             );

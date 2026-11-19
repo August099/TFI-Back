@@ -3,10 +3,9 @@ using Application.Models.Item;
 using Domain.Entities;
 using Domain.Exceptions;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Xml.Linq;
+using System.Linq;
 
 namespace Application.Services
 {
@@ -21,15 +20,7 @@ namespace Application.Services
         public async Task<List<ItemDTO>> GetAllAsync()
         {
             var items = await _itemRepository.GetAllAsync();
-            return items.Select(i => new ItemDTO
-            {
-                Id = i.Id, 
-                Name = i.Name,
-                Price = i.Price,
-                Stock = i.Stock,
-                Available = i.Available,
-                Description = i.Description
-            }).ToList();
+            return items.Select(MapDTO).ToList();
         }
 
         public async Task<ItemDTO?> GetByIdAsync(int id)
@@ -38,28 +29,13 @@ namespace Application.Services
 
             if (item == null) return null;
 
-            return new ItemDTO
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Price = item.Price,
-                Stock = item.Stock,
-                Available = item.Available,
-                Description = item.Description,
-            };
+            return MapDTO(item);
         }
 
         public async Task<List<ItemDTO>> GetAvailableItemsAsync()
         {
             var availableItems = await _itemRepository.GetAvailableItemsAsync();
-            return availableItems.Select(i =>  new ItemDTO{
-                Id = i.Id, 
-                Name = i.Name,
-                Price = i.Price,
-                Stock = i.Stock,
-                Available = i.Available,
-                Description = i.Description
-            }).ToList();
+            return availableItems.Select(MapDTO).ToList();
         }
 
         public async Task<ItemDTO?> AddAsync(CreateItemDTO item)
@@ -83,19 +59,17 @@ namespace Application.Services
             await _itemRepository.SaveChangesAsync();
             if (addedItem == null) return null;
 
-            return new ItemDTO
-            {
-                Id = addedItem.Id,
-                Name = addedItem.Name,
-                Price = addedItem.Price,
-                Stock = addedItem.Stock,
-                Available = addedItem.Available,
-                Description = addedItem.Description,
-            };
+            return MapDTO(addedItem);
         }
 
         public async Task<ItemDTO?> UpdateAsync(ItemDTO item)
         {
+            if (item == null) return null;
+            if (item.Stock < 0 || item.Price < 0)
+            {
+                throw new BadRequestException("El stock y/o precio no puede ser negativo");
+            }
+
             var updateItem = await _itemRepository.GetByIdAsync(item.Id);
 
             if (updateItem == null) return null;
@@ -109,15 +83,7 @@ namespace Application.Services
             await _itemRepository.UpdateAsync(updateItem);
             await _itemRepository.SaveChangesAsync();
 
-            return new ItemDTO
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Price = updateItem.Price,
-                Stock = updateItem.Stock,
-                Available = updateItem.Available,
-                Description = updateItem.Description,
-            };
+            return MapDTO(updateItem);
         }
 
         public async Task<ItemDTO?> DeleteAsync(int id)
@@ -129,14 +95,19 @@ namespace Application.Services
             await _itemRepository.DeleteAsync(id);
             await _itemRepository.SaveChangesAsync();
 
+            return MapDTO(item);
+        }
+
+        private static ItemDTO MapDTO(Item i)
+        {
             return new ItemDTO
-            {   
-                Id = item.Id,
-                Name = item.Name,
-                Price = item.Price,
-                Stock = item.Stock,
-                Available = item.Available,
-                Description = item.Description,
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Price = i.Price,
+                Stock = i.Stock,
+                Available = i.Available,
+                Description = i.Description,
             };
         }
     }

@@ -22,7 +22,7 @@ namespace Application.Services
             _configuration = configuration;
         }
 
-        public async Task<AuthResponseDTO> Register(RegisterAuthDTO request)
+        public async Task Register(RegisterAuthDTO request)
         {
             // 1) Verificar si ya existe un usuario con ese email
             var existingUser = await _userRepository.GetByEmailAsync(request.Email);
@@ -39,15 +39,12 @@ namespace Application.Services
                 State = true,
                 BirthDate = request.BirthDate,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Rol = request.Rol
+                Rol = Role.Cliente
             };
 
             // 3) Guardar usuario en la base de datos
             await _userRepository.AddAsync(user);
             await _userRepository.SaveChangesAsync();
-
-            // 4) Generar token y devolver respuesta
-            return GenerateToken(user);
         }
 
         public async Task<AuthResponseDTO> Login(LoginRequestDTO request)

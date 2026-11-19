@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
 
 namespace Application.Models.Pet
 {
@@ -9,7 +7,7 @@ namespace Application.Models.Pet
         public int ClientId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Race { get; set; } = string.Empty;
-        public bool Gender { get; set; }
+        public Gender Gender { get; set; } = Gender.Macho;
         public string Species { get; set; } = string.Empty;
         public DateOnly BirthDate { get; set; }
     }

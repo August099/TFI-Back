@@ -164,9 +164,8 @@ namespace Infrastructure.Data.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("PreparationDate")
                         .HasColumnType("datetime2");
@@ -225,8 +224,8 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("Gender")
-                        .HasColumnType("bit");
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()

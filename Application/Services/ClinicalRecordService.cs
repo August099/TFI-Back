@@ -3,7 +3,7 @@ using Application.Models.ClinicalRecord;
 using Domain.Entities;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Application.Services
 {
@@ -18,18 +18,7 @@ namespace Application.Services
         public async Task<List<ClinicalRecordDTO>> GetAllAsync()
         {
             var clinicalRecords = await _clinicalRecordRepository.GetAllAsync();
-            return clinicalRecords.Select(cr => new ClinicalRecordDTO
-            {
-                Id = cr.Id,
-                VeterinaryId = cr.VeterinaryId,
-                PetId = cr.PetId,
-                ShiftId = cr.ShiftId,
-                RecordType = cr.RecordType,
-                Observation = cr.Observation,
-                Treatment = cr.Treatment,
-                RegisterDate = cr.RegisterDate,
-                Diagnostic = cr.Diagnostic,
-            }).ToList();
+            return clinicalRecords.Select(MapDTO).ToList();
         }
 
         public async Task<ClinicalRecordDTO?> GetByIdAsync(int id)
@@ -38,52 +27,19 @@ namespace Application.Services
 
             if (clinicalRecord == null) return null;
 
-            return new ClinicalRecordDTO
-            {
-                Id = clinicalRecord.Id,
-                VeterinaryId = clinicalRecord.VeterinaryId,
-                PetId = clinicalRecord.PetId,
-                ShiftId = clinicalRecord.ShiftId,
-                RecordType = clinicalRecord.RecordType,
-                Observation = clinicalRecord.Observation,
-                Treatment = clinicalRecord.Treatment,
-                RegisterDate = clinicalRecord.RegisterDate,
-                Diagnostic = clinicalRecord.Diagnostic
-            };
+            return MapDTO(clinicalRecord);
         }
 
         public async Task<List<ClinicalRecordDTO>> GetByPetIdAsync(int petId)
         {
             var clinicalRecords = await _clinicalRecordRepository.GetByPetIdAsync(petId);
-            return clinicalRecords.Select(cr => new ClinicalRecordDTO
-            {
-                Id = cr.Id,
-                VeterinaryId = cr.VeterinaryId,
-                PetId = cr.PetId,
-                ShiftId = cr.ShiftId,
-                RecordType = cr.RecordType,
-                Observation = cr.Observation,
-                Treatment = cr.Treatment,
-                RegisterDate = cr.RegisterDate,
-                Diagnostic = cr.Diagnostic
-            }).ToList();
+            return clinicalRecords.Select(MapDTO).ToList();
         }
 
         public async Task<List<ClinicalRecordDTO>> GetByVeterinaryIdAsync(int veterinaryId)
         {
             var clinicalRecords = await _clinicalRecordRepository.GetByVeterinaryIdAsync(veterinaryId);
-            return clinicalRecords.Select(cr => new ClinicalRecordDTO
-            {
-                Id = cr.Id,
-                VeterinaryId = cr.VeterinaryId,
-                PetId = cr.PetId,
-                ShiftId = cr.ShiftId,
-                RecordType = cr.RecordType,
-                Observation = cr.Observation,
-                Treatment = cr.Treatment,
-                RegisterDate = cr.RegisterDate,
-                Diagnostic = cr.Diagnostic
-            }).ToList();
+            return clinicalRecords.Select(MapDTO).ToList();
         }
 
         public async Task<ClinicalRecordDTO?> AddAsync(CreateClinicalRecordDTO clinicalRecord)
@@ -106,22 +62,14 @@ namespace Application.Services
             if (addedClinicalRecord == null || addedClinicalRecord.Id == 0) 
                 return null;
 
-            return new ClinicalRecordDTO
-            {
-                Id = addedClinicalRecord.Id,
-                VeterinaryId = addedClinicalRecord.VeterinaryId,
-                PetId = addedClinicalRecord.PetId,
-                ShiftId = addedClinicalRecord.ShiftId,
-                RecordType = addedClinicalRecord.RecordType,
-                Observation = addedClinicalRecord.Observation,
-                Treatment = addedClinicalRecord.Treatment,
-                RegisterDate = addedClinicalRecord.RegisterDate,
-                Diagnostic = addedClinicalRecord.Diagnostic
-            };
+            return MapDTO(addedClinicalRecord);
         }
 
         public async Task<ClinicalRecordDTO?> UpdateAsync(ClinicalRecordDTO clinicalRecord)
         {
+            if (clinicalRecord == null)
+                return null;
+
             var updateClinicalRecord = await _clinicalRecordRepository.GetByIdAsync(clinicalRecord.Id);
 
             if (updateClinicalRecord == null) return null;
@@ -137,18 +85,7 @@ namespace Application.Services
             await _clinicalRecordRepository.UpdateAsync(updateClinicalRecord);
             await _clinicalRecordRepository.SaveChangesAsync();
 
-            return new ClinicalRecordDTO
-            {
-                Id = updateClinicalRecord.Id,
-                VeterinaryId = updateClinicalRecord.VeterinaryId,
-                PetId = updateClinicalRecord.PetId,
-                ShiftId = updateClinicalRecord.ShiftId,
-                RecordType = updateClinicalRecord.RecordType,
-                Observation = updateClinicalRecord.Observation,
-                Treatment = updateClinicalRecord.Treatment,
-                RegisterDate = updateClinicalRecord.RegisterDate,
-                Diagnostic = updateClinicalRecord.Diagnostic,
-            };
+            return MapDTO(updateClinicalRecord);
         }
 
         public async Task<ClinicalRecordDTO?> DeleteAsync(int id)
@@ -159,17 +96,22 @@ namespace Application.Services
             await _clinicalRecordRepository.DeleteAsync(id);
             await _clinicalRecordRepository.SaveChangesAsync();
 
+            return MapDTO(clinicalRecord);
+        }
+
+        private static ClinicalRecordDTO MapDTO(ClinicalRecord cr)
+        {
             return new ClinicalRecordDTO
             {
-                Id = clinicalRecord.Id,
-                VeterinaryId = clinicalRecord.VeterinaryId,
-                PetId = clinicalRecord.PetId,
-                ShiftId = clinicalRecord.ShiftId,
-                RecordType = clinicalRecord.RecordType,
-                Observation = clinicalRecord.Observation,
-                Treatment = clinicalRecord.Treatment,
-                RegisterDate = clinicalRecord.RegisterDate,
-                Diagnostic = clinicalRecord.Diagnostic,
+                Id = cr.Id,
+                VeterinaryId = cr.VeterinaryId,
+                PetId = cr.PetId,
+                ShiftId = cr.ShiftId,
+                RecordType = cr.RecordType,
+                Observation = cr.Observation,
+                Treatment = cr.Treatment,
+                RegisterDate = cr.RegisterDate,
+                Diagnostic = cr.Diagnostic,
             };
         }
     }
