@@ -37,27 +37,6 @@ namespace Application.Services
 
             return MapDTO(user);
         }
-        
-        public async Task<UserDTO?> AddAsync(CreateUserDTO user)
-        {
-            if (user == null) return null;
-
-            var newUser = new User
-            {
-                Dni= user.Dni,
-                Name = user.Name,
-                Email = user.Email,
-                Telephone = user.Telephone,
-                BirthDate = user.BirthDate
-            };
-
-            var addedUser = await _userRepository.AddAsync(newUser);
-            await _userRepository.SaveChangesAsync();
-
-            if (addedUser == null) return null;
-
-            return MapDTO(addedUser);
-        }
 
         public async Task<UserDTO?> UpdateAsync(UserDTO user)
         {
