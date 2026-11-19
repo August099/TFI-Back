@@ -45,6 +45,7 @@ namespace Application.Services
                 throw new BadRequestException("El correo no tiene un formato válido");
 
             var password = request.Password;
+
             // 4) validar el tamaño de la contraseña
             if (password.Length < 8)
                 throw new BadRequestException("La contraseña debe tener al menos 8 caracteres.");
