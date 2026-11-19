@@ -99,7 +99,7 @@ namespace Application.Services
                 DeliveryDate = order.DeliveryDate,
                 PreparationDate = order.PreparationDate,
                 PaymentMethod = order.PaymentMethod,
-                Status = order.Status,
+                Status = OrderStatus.PendientePago,
                 Total = total,
                 Items = orderItems
             };
