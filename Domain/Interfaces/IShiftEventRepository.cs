@@ -8,6 +8,7 @@ namespace Application.Interfaces
 {
     public interface IShiftEventRepository
     {
+        Task<ShiftEvent?> GetByIdAsync(int id);
         Task<List<ShiftEvent>> GetByShiftIdAsync(int shiftId);
         Task<List<ShiftEvent>> GetByUserIdAsync(int userId);
         Task<ShiftEvent?> AddAsync(ShiftEvent shiftEvent);

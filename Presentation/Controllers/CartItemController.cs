@@ -42,6 +42,10 @@ namespace Presentation.Controllers
         [HttpPost]
         public async Task<ActionResult<CartItemDTO>> Add([FromBody] CreateCartItemDTO cartItem)
         {
+            var getCart = await _cartService.GetOrCreateByClientIdAsync(cartItem.CartId);
+            if (getCart == null)
+                return BadRequest($"No se pudo obtener el carrito con Id:{cartItem.CartId}");
+
             var createdCartItem = await _cartItemService.AddAsync(cartItem);
             if (createdCartItem == null)
                 return BadRequest($"El CartItem con Id:{cartItem.ItemId} no se pudo crear");

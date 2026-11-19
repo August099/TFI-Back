@@ -1,22 +1,23 @@
 ﻿using Application.Interfaces;
 using Application.Models.Shift;
-using Application.Models.ShiftEvent;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Domain.Exceptions;
 
 namespace Application.Services
 {
-    public class ShiftService : IShiftService, IShiftEventService
+    public class ShiftService : IShiftService
     {
         private readonly IShiftRepository _shiftRepository;
-        private readonly IShiftEventRepository _shiftEventRepository;
-        public ShiftService(IShiftRepository shiftRepository, IShiftEventRepository shiftEventRepository)
+        private readonly IPetRepository _petRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IServiceRepository _serviceRepository;
+
+        public ShiftService(IShiftRepository shiftRepository, IPetRepository petRepository, IUserRepository userRepository, IServiceRepository serviceRepository)
         {
             _shiftRepository = shiftRepository;
-            _shiftEventRepository = shiftEventRepository;
+            _petRepository = petRepository;
+            _userRepository = userRepository;
+            _serviceRepository = serviceRepository;
         }
 
         public async Task<List<ShiftDTO>> GetAllAsync()
@@ -33,10 +34,52 @@ namespace Application.Services
             return MapDTO(shift);
         }
 
-        // se añade la auditoria por medio del add del turno
-        public async Task <ShiftDTO?> AddAsync(CreateShiftDTO shift, CreateShiftEventDTO shiftEvent)
+        public async Task<List<ShiftDTO>> GetByClientIdAsync(int clientId)
         {
-            if (shift == null || shiftEvent == null) return null;
+            var shifts = await _shiftRepository.GetByClientIdAsync(clientId);
+            return shifts.Select(MapDTO).ToList();
+        }
+
+        public async Task<List<ShiftDTO>> GetByVeterinaryIdAsync(int veterinaryId)
+        {
+            var shifts = await _shiftRepository.GetByVeterinaryIdAsync(veterinaryId);
+            return shifts.Select(MapDTO).ToList();
+        }
+
+        public async Task<List<ShiftDTO>> GetByPetIdAsync(int petId)
+        {
+            var shifts = await _shiftRepository.GetByPetIdAsync(petId);
+            return shifts.Select(MapDTO).ToList();
+        }
+
+        public async Task<List<ShiftDTO>> GetByStatusAsync(ShiftStatus status)
+        {
+            var shifts = await _shiftRepository.GetByStatusAsync(status);
+            return shifts.Select(MapDTO).ToList();
+        }
+
+
+        public async Task<ShiftDTO?> AddAsync(CreateShiftDTO shift) 
+        {
+            if (shift == null) return null;
+
+            var pet = await _petRepository.GetByIdAsync(shift.PetId)
+                ?? throw new NotFoundException($"La mascota con id {shift.PetId} no existe");
+
+            var client = await _userRepository.GetByIdAsync(shift.ClientId)
+                ?? throw new NotFoundException($"El cliente con id {shift.ClientId} no existe");
+
+            var vet = await _userRepository.GetByIdAsync(shift.VeterinaryId)
+                ?? throw new NotFoundException($"El veterinario con id {shift.VeterinaryId} no existe");
+
+            var service = await _serviceRepository.GetByIdAsync(shift.ServiceId)
+                ?? throw new NotFoundException($"El servicio con id {shift.ServiceId} no existe");
+
+            if (pet.ClientId != client.Id)
+                throw new ConflictException("La mascota no pertenece a ese cliente");
+
+            if (vet.Rol != Role.Veterinario)
+                throw new ConflictException("El usuario no es un veterinario");
 
             var newShift = new Shift
             {
@@ -51,33 +94,15 @@ namespace Application.Services
             };
 
             var addedShift = await _shiftRepository.AddAsync(newShift);
-            await _shiftRepository.SaveChangesAsync();
-
             if (addedShift == null || addedShift.Id == 0) return null;
-
-            var newShiftEvent = new ShiftEvent
-            {
-                UserId = shiftEvent.UserId,
-                ShiftId = addedShift.Id,
-                ReasonConsultationId = shiftEvent.ReasonConsultationId,
-                ReasonCancellationId = shiftEvent.ReasonCancellationId,
-                NewVeterinaryId = shiftEvent.NewVeterinaryId,
-                OldVeterinaryId = shiftEvent.OldVeterinaryId,
-                Type = TypeShiftEvent.Creacion,
-                Date = DateTime.Now
-            };
-
-
-            await _shiftEventRepository.AddAsync(newShiftEvent);
-            await _shiftEventRepository.SaveChangesAsync();
+            await _shiftRepository.SaveChangesAsync();
 
             return MapDTO(addedShift);
         }
 
-        // se añade la auditoria por medio de la actualización del turno
-        public async Task<ShiftDTO?> UpdateAsync(ShiftDTO shift, CreateShiftEventDTO shiftEvent)
+        public async Task<ShiftDTO?> UpdateAsync(ShiftDTO shift)
         {
-            if (shift == null || shiftEvent == null) return null;
+            if (shift == null) return null;
 
             var updateShift = await _shiftRepository.GetByIdAsync(shift.Id);
             if (updateShift == null) return null;
@@ -93,21 +118,6 @@ namespace Application.Services
 
             await _shiftRepository.UpdateAsync(updateShift);
             await _shiftRepository.SaveChangesAsync();
-
-            // se crea la auditoría pero es de tipo actualización, finalización o cancelación
-            var updateShiftEvent = new ShiftEvent
-            {
-                UserId = shiftEvent.UserId,
-                ShiftId = updateShift.Id,
-                ReasonConsultationId = shiftEvent.ReasonConsultationId,
-                ReasonCancellationId = shiftEvent.ReasonCancellationId,
-                NewVeterinaryId = shiftEvent.NewVeterinaryId,
-                OldVeterinaryId = shiftEvent.OldVeterinaryId,
-                Type = shiftEvent.Type,
-                Date = DateTime.Now
-            };
-            await _shiftEventRepository.AddAsync(updateShiftEvent);
-            await _shiftEventRepository.SaveChangesAsync();
 
             return MapDTO(updateShift);
         }
@@ -135,38 +145,6 @@ namespace Application.Services
                 ClientObs = s.ClientObs,
                 InitialDate = s.InitialDate,
                 EndDate = s.EndDate
-            };
-        }
-
-        //------------------------------------ ShiftEvent (Tabla de auditoría) ------------------------------------
-        public async Task<List<ShiftEventDTO>> GetByShiftIdAsync(int shiftId)
-        {
-            var shiftsEvent = await _shiftEventRepository.GetByShiftIdAsync(shiftId);
-
-            return shiftsEvent.Select(MapShiftEventDTO).ToList();
-
-        }
-
-        public async Task<List<ShiftEventDTO>> GetByUserIdAsync(int userId)
-        {
-            var shiftsEvent = await _shiftEventRepository.GetByUserIdAsync(userId);
-
-            return shiftsEvent.Select(MapShiftEventDTO).ToList();
-        }
-
-        private static ShiftEventDTO MapShiftEventDTO(ShiftEvent se)
-        {
-            return new ShiftEventDTO
-            {
-                Id = se.Id,
-                UserId = se.UserId,
-                ShiftId = se.ShiftId,
-                ReasonCancellationId = se.ReasonCancellationId,
-                ReasonConsultationId = se.ReasonConsultationId,
-                NewVeterinaryId = se.NewVeterinaryId,
-                OldVeterinaryId = se.OldVeterinaryId,
-                Type = se.Type,
-                Date = se.Date
             };
         }
     }

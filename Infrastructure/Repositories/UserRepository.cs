@@ -40,6 +40,11 @@ namespace Infrastructure.Repositories
             return _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
+        public Task<User?> GetByDniAsync(string dni)
+        {
+            return _context.Users.FirstOrDefaultAsync(u => u.Dni == dni);
+        }
+
         public async Task<User?> AddAsync(User user)
         {
             if (user == null)
