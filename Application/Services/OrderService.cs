@@ -96,17 +96,18 @@ namespace Application.Services
                 DeliveryDate = order.DeliveryDate,
                 PreparationDate = order.PreparationDate,
                 PaymentMethod = order.PaymentMethod,
-                Status = order.Status,
+                Status = OrderStatus.PendientePago,
                 Total = total,
                 Items = orderItems
             };
             
             var addedOrder = await _orderRepository.AddAsync(newOrder);
-            
             await _orderRepository.SaveChangesAsync();
-
             if (addedOrder == null || addedOrder.Id == 0)
                 return null;
+
+            if (addedOrder.Status != OrderStatus.PendientePago)
+                throw new BadRequestException("Estado de orden inválido");
 
             return MapDTO(addedOrder);
         }
