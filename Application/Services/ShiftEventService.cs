@@ -15,6 +15,13 @@ namespace Application.Services
             _shiftEventRepository = shiftEventRepository;
         }
 
+        public async Task<ShiftEventDTO> GetByIdAsync(int shiftId)
+        {
+            var shiftsEvent = await _shiftEventRepository.GetByIdAsync(shiftId);
+
+            return MapDTO(shiftsEvent);
+        }
+
         public async Task<List<ShiftEventDTO>> GetByShiftIdAsync(int shiftId)
         {
             var shiftsEvent = await _shiftEventRepository.GetByShiftIdAsync(shiftId);
