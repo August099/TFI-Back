@@ -46,6 +46,16 @@ namespace Application.Services
         {
             if (order == null || order.Items == null) return null;
 
+            if (!PaymentMethods.IsDefined(order.PaymentMethod))
+            {
+                throw new BadRequestException($"El metodo de pago: {order.PaymentMethod} no es válido");
+            }
+
+            if (!OrderStatus.IsDefined(order.Status))
+            {
+                throw new BadRequestException($"El estado de la orden: {order.Status} no es válido");
+            }
+
             // lista para no añadir en newOrder
             var orderItems = new List<OrderItem>();
 

@@ -68,39 +68,6 @@ namespace Application.Services
                 BirthDate = user.BirthDate
             };
         }
-        
-        public async Task<UserDTO?> AddAsync(CreateUserDTO user)
-        {
-            if (user == null) return null;
-
-            var newUser = new User
-            {
-                Dni= user.Dni,
-                Name = user.Name,
-                Email = user.Email,
-                Telephone = user.Telephone,
-                BirthDate = user.BirthDate
-            };
-
-            var addedUser = await _userRepository.AddAsync(newUser);
-            await _userRepository.SaveChangesAsync();
-
-            if (addedUser == null) return null;
-
-            var newUserDTO = new UserDTO
-            {
-                Id = addedUser.Id,
-                Rol = addedUser.Rol,
-                Dni = addedUser.Dni,
-                Name = addedUser.Name,
-                Email = addedUser.Email,
-                Telephone = addedUser.Telephone,
-                State = addedUser.State,
-                BirthDate = addedUser.BirthDate
-            };
-
-            return newUserDTO;
-        }
 
         public async Task<UserDTO?> UpdateAsync(UserDTO user)
         {

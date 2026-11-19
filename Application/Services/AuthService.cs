@@ -39,7 +39,7 @@ namespace Application.Services
                 State = true,
                 BirthDate = request.BirthDate,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Rol = request.Rol
+                Rol = Role.Cliente
             };
 
             // 3) Guardar usuario en la base de datos
