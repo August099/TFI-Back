@@ -18,27 +18,25 @@ namespace Presentation.Controllers
             _cartService = cartService;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<CartDTO>> Get([FromRoute] int id)
         {
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             var cart = await _cartService.GetByIdAsync(id);
             if (cart == null)
                 return NotFound($"El Carro con el Id:{id} no pudo ser encontrado");
 
-            // verificar que el carro pertenezca al usuario
-            if (userRole == "Cliente" || userRole == "Veterinario")
+            var isStaff = User.IsInRole("Admin") || User.IsInRole("Recepcionista");
+            if (!isStaff)
             {
-                if (string.IsNullOrEmpty(userIdClaim))
-                    return BadRequest("No se pudo identificar al usuario");
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!int.TryParse(userIdClaim, out var userId))
+                    return Unauthorized();
 
-
-
-                if (cart.ClientId != int.Parse(userIdClaim))
+                if (cart.ClientId != userId)
                     return Forbid();
             }
+
             return Ok(cart);
         }
 
@@ -47,10 +45,10 @@ namespace Presentation.Controllers
         public async Task<ActionResult<CartDTO>> GetMyCart()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim))
-                return BadRequest("No se pudo identificar al usuario");
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
 
-            var cart = await _cartService.GetOrCreateByClientIdAsync(int.Parse(userIdClaim));
+            var cart = await _cartService.GetOrCreateByClientIdAsync(userId);
             if (cart == null)
                 return NotFound($"No se pudo crear el Carro");
 

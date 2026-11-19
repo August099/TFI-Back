@@ -42,7 +42,15 @@ namespace Presentation.Controllers
         [HttpPost]
         public async Task<ActionResult<CartItemDTO>> Add([FromBody] CreateCartItemDTO cartItem)
         {
-            var createdCartItem = await _cartItemService.AddAsync(cartItem);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out var clientId))
+                return Unauthorized();
+
+            var getCart = await _cartService.GetOrCreateByClientIdAsync(clientId);
+            if (getCart == null)
+                return BadRequest($"No se pudo obtener el carrito del usuario con Id:{clientId}");
+
+            var createdCartItem = await _cartItemService.AddAsync(getCart.Id, cartItem);
             if (createdCartItem == null)
                 return BadRequest($"El CartItem con Id:{cartItem.ItemId} no se pudo crear");
 

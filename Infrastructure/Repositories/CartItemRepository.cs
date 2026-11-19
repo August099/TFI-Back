@@ -2,10 +2,6 @@
 using Domain.Interfaces;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
@@ -45,6 +41,11 @@ namespace Infrastructure.Repositories
 
             _context.CartItems.Update(cartItem);
             return cartItem;
+        }
+        public Task DeleteRangeAsync(IEnumerable<CartItem> items)
+        {
+            _context.CartItems.RemoveRange(items);
+            return Task.CompletedTask;
         }
         public async Task SaveChangesAsync()
         {

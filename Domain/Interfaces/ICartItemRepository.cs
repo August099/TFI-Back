@@ -11,6 +11,7 @@ namespace Domain.Interfaces
         Task<CartItem?> GetByIdAsync(int id);
         Task<CartItem?> UpdateAsync(CartItem cartItem);
         Task<CartItem?> AddAsync(CartItem cartItem);
+        Task DeleteRangeAsync(IEnumerable<CartItem> items);
         Task SaveChangesAsync();
     }
 }

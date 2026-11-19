@@ -16,7 +16,7 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task <ShiftEvent> GetByIdAsync(int id)
+        public async Task<ShiftEvent?> GetByIdAsync(int id)
         {
             var shiftEvent = await _context.ShiftEvents.FirstOrDefaultAsync(se => se.Id == id);
             return shiftEvent;

@@ -34,8 +34,11 @@ builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
 builder.Services.AddScoped<IShiftEventRepository, ShiftEventRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 // 3) Servicios de aplicación
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICartItemService, CartItemService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IClinicalRecordService, ClinicalRecordService>();
@@ -49,6 +52,7 @@ builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddScoped<IShiftEventService, ShiftEventService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDogServices, DogServices>();
+builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 
 // 4) Configuración JWT
 var jwtKey = builder.Configuration["Jwt:Key"];

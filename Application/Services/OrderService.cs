@@ -3,6 +3,7 @@ using Application.Models.Order;
 using Application.Models.OrderItem;
 using Domain.Entities;
 using Domain.Exceptions;
+using Domain.Interfaces;
 using System.Data;
 
 namespace Application.Services
@@ -11,10 +12,14 @@ namespace Application.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IItemRepository _itemRepository;
-        public OrderService(IOrderRepository orderRepository, IItemRepository itemRepository)
+        private readonly ICartRepository _cartRepository;
+        private readonly ICartItemRepository _cartItemRepository;
+        public OrderService(IOrderRepository orderRepository, IItemRepository itemRepository, ICartRepository cartRepository, ICartItemRepository cartItemRepository)
         {
             _orderRepository = orderRepository;
             _itemRepository = itemRepository;
+            _cartRepository = cartRepository;
+            _cartItemRepository = cartItemRepository;
         }
 
         public async Task<List<OrderDTO>> GetAllAsync()
@@ -44,7 +49,7 @@ namespace Application.Services
 
         public async Task<OrderDTO?> AddAsync(CreateOrderDTO order)
         {
-            if (order == null || order.Items == null) return null;
+            if (order == null) return null;
 
             if (!PaymentMethods.IsDefined(order.PaymentMethod))
             {
@@ -56,39 +61,37 @@ namespace Application.Services
                 throw new BadRequestException($"El estado de la orden: {order.Status} no es válido");
             }
 
-            // lista para no añadir en newOrder
+            var cart = await _cartRepository.GetByClientIdAsync(order.ClientId)
+        ?? throw new NotFoundException($"El cliente con id {order.ClientId} no tiene un carrito");
+
+            var cartItems = (await _cartItemRepository.GetByCartIdAsync(cart.Id)).ToList();
+            if (cartItems.Count == 0)
+                throw new ConflictException("El carrito está vacío");
+
             var orderItems = new List<OrderItem>();
-
             decimal total = 0;
-            foreach (var item in order.Items)
+
+            foreach (var cartItem in cartItems)
             {
-                var itemDB = await _itemRepository.GetByIdAsync(item.ItemId);
-                if (itemDB == null)
-                {
-                    throw new NotFoundException($"El Item con el id: {item.ItemId} no existe");
-                }
+                var itemDB = await _itemRepository.GetByIdAsync(cartItem.ItemId)
+                    ?? throw new NotFoundException($"El Item con el id: {cartItem.ItemId} no existe");
 
-                if(itemDB.Stock < item.Amount)
-                {
+                if (itemDB.Stock < cartItem.Quantity)
                     throw new ConflictException($"El stock del Item {itemDB.Name} no es suficiente, Stock {itemDB.Stock}");
-                }
 
-                // resto la cantidad del pedido al producto y guardo el stock restante
-                itemDB.Stock -= item.Amount;
+                itemDB.Stock -= cartItem.Quantity;
                 await _itemRepository.UpdateAsync(itemDB);
 
-                // multiplico el precio del item de la base de datos por la cantidad solicitada y lo acumulo en el total
-                decimal subtotal = itemDB.Price * item.Amount;
-                total += subtotal;
+                total += itemDB.Price * cartItem.Quantity;
 
                 orderItems.Add(new OrderItem
                 {
-                    ItemId = item.ItemId,
-                    Amount = item.Amount,
-                    UnitPrice = itemDB.Price // precio del Item en la base de datos
+                    ItemId = cartItem.ItemId,
+                    Amount = cartItem.Quantity,
+                    UnitPrice = itemDB.Price
                 });
             }
-            
+
             var newOrder = new Order
             {
                 ClientId = order.ClientId,
@@ -100,16 +103,15 @@ namespace Application.Services
                 Total = total,
                 Items = orderItems
             };
-            
-            var addedOrder = await _orderRepository.AddAsync(newOrder);
+
+            await _orderRepository.AddAsync(newOrder);
+
+            // vaciar el carrito
+            await _cartItemRepository.DeleteRangeAsync(cartItems);
+
             await _orderRepository.SaveChangesAsync();
-            if (addedOrder == null || addedOrder.Id == 0)
-                return null;
 
-            if (addedOrder.Status != OrderStatus.PendientePago)
-                throw new BadRequestException("Estado de orden inválido");
-
-            return MapDTO(addedOrder);
+            return MapDTO(newOrder);
         }
  
         public async Task<OrderDTO?> UpdateAsync(OrderDTO order)

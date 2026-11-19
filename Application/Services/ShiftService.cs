@@ -1,20 +1,23 @@
 ﻿using Application.Interfaces;
 using Application.Models.Shift;
-using Application.Models.ShiftEvent;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Domain.Exceptions;
 
 namespace Application.Services
 {
     public class ShiftService : IShiftService
     {
         private readonly IShiftRepository _shiftRepository;
-        public ShiftService(IShiftRepository shiftRepository)
+        private readonly IPetRepository _petRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IServiceRepository _serviceRepository;
+
+        public ShiftService(IShiftRepository shiftRepository, IPetRepository petRepository, IUserRepository userRepository, IServiceRepository serviceRepository)
         {
             _shiftRepository = shiftRepository;
+            _petRepository = petRepository;
+            _userRepository = userRepository;
+            _serviceRepository = serviceRepository;
         }
 
         public async Task<List<ShiftDTO>> GetAllAsync()
@@ -59,6 +62,24 @@ namespace Application.Services
         public async Task<ShiftDTO?> AddAsync(CreateShiftDTO shift) 
         {
             if (shift == null) return null;
+
+            var pet = await _petRepository.GetByIdAsync(shift.PetId)
+                ?? throw new NotFoundException($"La mascota con id {shift.PetId} no existe");
+
+            var client = await _userRepository.GetByIdAsync(shift.ClientId)
+                ?? throw new NotFoundException($"El cliente con id {shift.ClientId} no existe");
+
+            var vet = await _userRepository.GetByIdAsync(shift.VeterinaryId)
+                ?? throw new NotFoundException($"El veterinario con id {shift.VeterinaryId} no existe");
+
+            var service = await _serviceRepository.GetByIdAsync(shift.ServiceId)
+                ?? throw new NotFoundException($"El servicio con id {shift.ServiceId} no existe");
+
+            if (pet.ClientId != client.Id)
+                throw new ConflictException("La mascota no pertenece a ese cliente");
+
+            if (vet.Rol != Role.Veterinario)
+                throw new ConflictException("El usuario no es un veterinario");
 
             var newShift = new Shift
             {
