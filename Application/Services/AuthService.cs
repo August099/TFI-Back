@@ -17,8 +17,8 @@ namespace Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
-
         private const string EmailPattern = @"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$";
+        private const string PasswordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$";
 
         public AuthService(IUserRepository userRepository, IConfiguration configuration)
         {
@@ -44,7 +44,17 @@ namespace Application.Services
             if (!Regex.IsMatch(email, EmailPattern))
                 throw new BadRequestException("El correo no tiene un formato válido");
 
-            // 4) Crear nuevo usuario mapeando todos los campos y hasheando la contraseña
+            var password = request.Password;
+            // 4) validar el tamaño de la contraseña
+            if (password.Length < 8)
+                throw new BadRequestException("La contraseña debe tener al menos 8 caracteres.");
+
+            // 5) Validar la contraseña usando una expresión regular
+
+            if (!Regex.IsMatch(password, PasswordPattern))
+                throw new BadRequestException("La contraseña debe tener una minuscula, una mayuscula y un numero.");
+
+            // 6) Crear nuevo usuario mapeando todos los campos y hasheando la contraseña
             var user = new User
             {
                 Dni = request.Dni,
@@ -57,7 +67,7 @@ namespace Application.Services
                 Rol = Role.Cliente
             };
 
-            // 5) Guardar usuario en la base de datos
+            // 7) Guardar usuario en la base de datos
             await _userRepository.AddAsync(user);
             await _userRepository.SaveChangesAsync();
         }
