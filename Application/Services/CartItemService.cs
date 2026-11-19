@@ -32,8 +32,8 @@ namespace Application.Services
         }
         public async Task<CartItemDTO?> AddAsync(CreateCartItemDTO cartItem)
         {
-            if (cartItem.CartId <= 0 || cartItem.ItemId <= 0)
-                throw new BadRequestException("El Id del carro y/o el Id del Item no son válidos");
+            if (cartItem.ItemId <= 0)
+                throw new BadRequestException("El Id del Item no es válido");
 
             if (cartItem.Quantity <= 0)
                 throw new BadRequestException("La cantidad del item debe ser mayor a 0");

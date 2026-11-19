@@ -12,5 +12,6 @@ namespace Application.Interfaces
     {
         Task<User?> GetByNameAsync(string Name);
         Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByDniAsync(string dni);
     }
 }

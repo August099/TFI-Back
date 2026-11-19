@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using Application.Interfaces;
 using Application.Models.Auth;
-using Application.Interfaces;
 using Domain.Entities;
+using Domain.Exceptions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text;
-using System.Security.Authentication;
-using Domain.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace Application.Services
 {
@@ -15,6 +17,8 @@ namespace Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+
+        private const string EmailPattern = @"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$";
 
         public AuthService(IUserRepository userRepository, IConfiguration configuration)
         {
@@ -25,11 +29,22 @@ namespace Application.Services
         public async Task Register(RegisterAuthDTO request)
         {
             // 1) Verificar si ya existe un usuario con ese email
-            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
-            if (existingUser != null)
+            var existingUserByEmail = await _userRepository.GetByEmailAsync(request.Email);
+            if (existingUserByEmail != null)
                 throw new ConflictException("El email ya se encuentra registrado.");
 
-            // 2) Crear nuevo usuario mapeando todos los campos y hasheando la contraseña
+            // 2) Verificar si ya existe un usuario con ese dni
+            var existingUserByDni = await _userRepository.GetByDniAsync(request.Dni);
+            if (existingUserByDni != null)
+                throw new ConflictException("El dni ya se encuentra registrado.");
+
+            // 3) Validar el email usando una expresión regular
+            var email = request.Email.Trim().ToLowerInvariant();
+
+            if (!Regex.IsMatch(email, EmailPattern))
+                throw new BadRequestException("El correo no tiene un formato válido");
+
+            // 4) Crear nuevo usuario mapeando todos los campos y hasheando la contraseña
             var user = new User
             {
                 Dni = request.Dni,
@@ -42,7 +57,7 @@ namespace Application.Services
                 Rol = Role.Cliente
             };
 
-            // 3) Guardar usuario en la base de datos
+            // 5) Guardar usuario en la base de datos
             await _userRepository.AddAsync(user);
             await _userRepository.SaveChangesAsync();
         }
