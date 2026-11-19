@@ -3,6 +3,8 @@ using Application.Models.Chat;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Application.Models.Message;
 
 namespace Presentation.Controllers
 {
@@ -12,9 +14,11 @@ namespace Presentation.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IChatService _chatService;
-        public ChatController(IChatService chatService)
+        private readonly IChatMessageService _chatMessageService;
+        public ChatController(IChatService chatService, IChatMessageService chatMessageService)
         {
             _chatService = chatService;
+            _chatMessageService = chatMessageService;
         }
 
         [HttpGet]
@@ -61,6 +65,29 @@ namespace Presentation.Controllers
                 routeValues: new { id = createdChat.Id},
                 value: createdChat
             );
+        }
+
+        [HttpPost("{chatId}/messages")]
+        public async Task<ActionResult<MessageDTO>> AddMessage(
+        [FromRoute] int chatId,
+        [FromBody] CreateMessageInChatDTO message)
+        {
+            if (message is null)
+                return BadRequest("Los datos del mensaje son inválidos");
+
+            var senderIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(senderIdClaim, out var senderId))
+                return Forbid();
+
+            var created = await _chatMessageService.AddAsync(
+                new CreateMessageDTO { ChatId = chatId, Text = message.Text },
+                senderId);
+
+            return CreatedAtAction(
+                actionName: nameof(ChatMessageController.GetById),
+                controllerName: "ChatMessage",
+                routeValues: new { id = created.Id },
+                value: created);
         }
 
         [HttpPut("{id}")]
