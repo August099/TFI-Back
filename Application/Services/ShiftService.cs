@@ -4,9 +4,8 @@ using Application.Models.ShiftEvent;
 using Domain.Entities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Reflection.Emit;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -23,18 +22,7 @@ namespace Application.Services
         public async Task<List<ShiftDTO>> GetAllAsync()
         {
             var shifts = await _shiftRepository.GetAllAsync();
-            return shifts.Select(s => new ShiftDTO
-            {
-                 Id = s.Id,
-                 PetId = s.PetId,
-                 VeterinaryId = s.VeterinaryId,
-                 ClientId = s.ClientId,
-                 ServiceId = s.ServiceId,
-                 Status = s.Status,
-                 ClientObs = s.ClientObs,
-                 InitialDate = s.InitialDate,
-                 EndDate = s.EndDate
-            }).ToList();
+            return shifts.Select(MapDTO).ToList();
         }
 
         public async Task<ShiftDTO?> GetByIdAsync(int id)
@@ -42,18 +30,7 @@ namespace Application.Services
             var shift = await _shiftRepository.GetByIdAsync(id);
             if (shift == null) return null;
 
-            return new ShiftDTO
-            {
-                Id = shift.Id,
-                PetId = shift.PetId,
-                VeterinaryId = shift.VeterinaryId,
-                ClientId = shift.ClientId,
-                ServiceId = shift.ServiceId,
-                Status = shift.Status,
-                ClientObs = shift.ClientObs,
-                InitialDate = shift.InitialDate,
-                EndDate = shift.EndDate
-            };
+            return MapDTO(shift);
         }
 
         // se añade la auditoria por medio del add del turno
@@ -94,18 +71,7 @@ namespace Application.Services
             await _shiftEventRepository.AddAsync(newShiftEvent);
             await _shiftEventRepository.SaveChangesAsync();
 
-            return new ShiftDTO
-            {
-                Id = addedShift.Id,
-                PetId = addedShift.PetId,
-                VeterinaryId = addedShift.VeterinaryId,
-                ClientId = addedShift.ClientId,
-                ServiceId = addedShift.ServiceId,
-                Status = addedShift.Status,
-                ClientObs = addedShift.ClientObs,
-                InitialDate = addedShift.InitialDate,
-                EndDate = addedShift.EndDate
-            };
+            return MapDTO(addedShift);
         }
 
         // se añade la auditoria por medio de la actualización del turno
@@ -143,18 +109,7 @@ namespace Application.Services
             await _shiftEventRepository.AddAsync(updateShiftEvent);
             await _shiftEventRepository.SaveChangesAsync();
 
-            return new ShiftDTO
-            {
-                Id = updateShift.Id,
-                PetId = updateShift.PetId,
-                VeterinaryId = updateShift.VeterinaryId,
-                ClientId = updateShift.ClientId,
-                ServiceId = updateShift.ServiceId,
-                Status = updateShift.Status,
-                ClientObs = updateShift.ClientObs,
-                InitialDate = updateShift.InitialDate,
-                EndDate = updateShift.EndDate
-            };
+            return MapDTO(updateShift);
         }
 
         public async Task<ShiftDTO?> DeleteAsync(int id)
@@ -164,17 +119,22 @@ namespace Application.Services
 
             await _shiftRepository.DeleteAsync(shift.Id);
             await _shiftRepository.SaveChangesAsync();
+            return MapDTO(shift);
+        }
+
+        private static ShiftDTO MapDTO(Shift s)
+        {
             return new ShiftDTO
             {
-                Id = shift.Id,
-                PetId = shift.PetId,
-                VeterinaryId = shift.VeterinaryId,
-                ClientId = shift.ClientId,
-                ServiceId = shift.ServiceId,
-                Status = shift.Status,
-                ClientObs = shift.ClientObs,
-                InitialDate = shift.InitialDate,
-                EndDate = shift.EndDate
+                Id = s.Id,
+                PetId = s.PetId,
+                VeterinaryId = s.VeterinaryId,
+                ClientId = s.ClientId,
+                ServiceId = s.ServiceId,
+                Status = s.Status,
+                ClientObs = s.ClientObs,
+                InitialDate = s.InitialDate,
+                EndDate = s.EndDate
             };
         }
 
@@ -183,18 +143,7 @@ namespace Application.Services
         {
             var shiftsEvent = await _shiftEventRepository.GetByShiftIdAsync(shiftId);
 
-            return shiftsEvent.Select(se => new ShiftEventDTO
-            {
-                Id = se.Id,
-                UserId = se.UserId,
-                ShiftId = se.ShiftId,
-                ReasonCancellationId = se.ReasonCancellationId,
-                ReasonConsultationId = se.ReasonConsultationId,
-                NewVeterinaryId = se.NewVeterinaryId,
-                OldVeterinaryId = se.OldVeterinaryId,
-                Type = se.Type,
-                Date = se.Date
-            }).ToList();
+            return shiftsEvent.Select(MapShiftEventDTO).ToList();
 
         }
 
@@ -202,7 +151,12 @@ namespace Application.Services
         {
             var shiftsEvent = await _shiftEventRepository.GetByUserIdAsync(userId);
 
-            return shiftsEvent.Select(se => new ShiftEventDTO
+            return shiftsEvent.Select(MapShiftEventDTO).ToList();
+        }
+
+        private static ShiftEventDTO MapShiftEventDTO(ShiftEvent se)
+        {
+            return new ShiftEventDTO
             {
                 Id = se.Id,
                 UserId = se.UserId,
@@ -213,7 +167,7 @@ namespace Application.Services
                 OldVeterinaryId = se.OldVeterinaryId,
                 Type = se.Type,
                 Date = se.Date
-            }).ToList();
+            };
         }
     }
 }

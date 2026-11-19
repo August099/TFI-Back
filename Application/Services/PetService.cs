@@ -6,6 +6,7 @@ using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Application.Services
 {
@@ -20,17 +21,7 @@ namespace Application.Services
         public async Task<List<PetDTO>> GetAllAsync()
         {
             var pets = await _petRepository.GetAllAsync();
-
-            return pets.Select(p => new PetDTO
-            {
-                Id = p.Id,
-                ClientId = p.ClientId,
-                Name = p.Name,
-                Race = p.Race,
-                Gender = p.Gender,
-                Species = p.Species,
-                BirthDate = p.BirthDate,
-            }).ToList();
+            return pets.Select(MapDTO).ToList();
         }
 
         public async Task<PetDTO?> GetByIdAsync(int id)
@@ -38,35 +29,20 @@ namespace Application.Services
             var pet = await _petRepository.GetByIdAsync(id);
             if (pet == null) return null;
 
-            return new PetDTO
-            {
-                Id = pet.Id,
-                ClientId = pet.ClientId,
-                Name = pet.Name,
-                Race = pet.Race,
-                Gender = pet.Gender,
-                Species = pet.Species,
-                BirthDate = pet.BirthDate,
-            };
+            return MapDTO(pet);
         }
 
         public async Task<List<PetDTO>> GetByClientIdAsync(int clientId)
         {
             var pets = await _petRepository.GetByClientIdAsync(clientId);
-            return pets.Select(p => new PetDTO
-            {
-                Id = p.Id,
-                ClientId = p.ClientId,
-                Name = p.Name,
-                Race = p.Race,
-                Gender = p.Gender,
-                Species = p.Species,
-                BirthDate = p.BirthDate
-            }).ToList();
+            return pets.Select(MapDTO).ToList();
         }
 
         public async Task<PetDTO?> AddAsync(CreatePetDTO pet)
         {
+            if (pet == null)
+                return null;
+
             if (!Gender.IsDefined(pet.Gender))
             {
                 throw new BadRequestException($"El genero: {pet.Gender} no es válido.");
@@ -87,16 +63,7 @@ namespace Application.Services
             if (addedPet == null || addedPet.Id == 0)
                 return null;
 
-            return new PetDTO
-            {
-                Id = addedPet.Id,
-                ClientId = addedPet.ClientId,
-                Name = addedPet.Name,
-                Race = addedPet.Race,
-                Gender = addedPet.Gender,
-                Species = addedPet.Species,
-                BirthDate = addedPet.BirthDate,
-            };
+            return MapDTO(addedPet);
         }
 
         public async Task<PetDTO?> UpdateAsync(PetDTO pet)
@@ -119,16 +86,7 @@ namespace Application.Services
             await _petRepository.UpdateAsync(updatePet);
             await _petRepository.SaveChangesAsync();
 
-            return new PetDTO
-            {
-                Id = updatePet.Id,
-                ClientId = updatePet.ClientId,
-                Name = updatePet.Name,
-                Race = updatePet.Race,
-                Gender = updatePet.Gender,
-                Species = updatePet.Species,
-                BirthDate = updatePet.BirthDate
-            };
+            return MapDTO(updatePet);
         }
 
         public async Task<PetDTO?> DeleteAsync(int id)
@@ -139,15 +97,20 @@ namespace Application.Services
             await _petRepository.DeleteAsync(id);
             await _petRepository.SaveChangesAsync();
 
+            return MapDTO(pet);
+        }
+ 
+        private static PetDTO MapDTO(Pet p)
+        {
             return new PetDTO
             {
-                Id = pet.Id,
-                ClientId = pet.ClientId,
-                Name = pet.Name,
-                Race = pet.Race,
-                Gender = pet.Gender,
-                Species = pet.Species,
-                BirthDate = pet.BirthDate
+                Id = p.Id,
+                ClientId = p.ClientId,
+                Name = p.Name,
+                Race = p.Race,
+                Gender = p.Gender,
+                Species = p.Species,
+                BirthDate = p.BirthDate
             };
         }
     }

@@ -138,8 +138,6 @@ namespace Application.Services
 
             return MapDTO(order);
         }
-
-        // metodo para mapear a dto la orden
         private static OrderDTO MapDTO(Order o)
         {
             return new OrderDTO

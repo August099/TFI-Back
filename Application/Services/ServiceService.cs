@@ -4,7 +4,8 @@ using Domain.Entities;
 using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -19,14 +20,7 @@ namespace Application.Services
         public async Task<List<ServiceDTO>> GetAllAsync()
         {
             var services = await _serviceRepository.GetAllAsync();
-            return services.Select(s => new ServiceDTO
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Description = s.Description,
-                Price = s.Price,
-                Duration = s.Duration
-            }).ToList();
+            return services.Select(MapDTO).ToList();
         }
 
         public async Task<ServiceDTO?> GetByIdAsync(int id)
@@ -34,27 +28,13 @@ namespace Application.Services
             var service = await _serviceRepository.GetByIdAsync(id);
             if (service == null) return null;
 
-            return new ServiceDTO
-            {
-                Id = service.Id,
-                Title = service.Title,
-                Description = service.Description,
-                Price = service.Price,
-                Duration = service.Duration
-            };
+            return MapDTO(service);
         }
 
         public async Task<List<ServiceDTO>> GetByTitleAsync(string title)
         {
             var services = await _serviceRepository.GetByTitleAsync(title);
-            return services.Select(s => new ServiceDTO
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Description = s.Description,
-                Price = s.Price,
-                Duration = s.Duration
-            }).ToList();
+            return services.Select(MapDTO).ToList();
         }
 
         public async Task<ServiceDTO?> AddAsync(CreateServiceDTO service)
@@ -76,14 +56,7 @@ namespace Application.Services
             if (addedService == null || addedService.Id == 0)
                 return null;
 
-            return new ServiceDTO
-            {
-                Id = addedService.Id,
-                Title = addedService.Title,
-                Description = addedService.Description,
-                Price = addedService.Price,
-                Duration = addedService.Duration
-            };
+            return MapDTO(addedService);
         }
 
         public async Task<ServiceDTO?> UpdateAsync(ServiceDTO service)
@@ -102,14 +75,7 @@ namespace Application.Services
             await _serviceRepository.UpdateAsync(updateService);
             await _serviceRepository.SaveChangesAsync();
 
-            return new ServiceDTO
-            {
-                Id = updateService.Id,
-                Title = updateService.Title,
-                Description = updateService.Description,
-                Price = updateService.Price,
-                Duration = updateService.Duration    
-            };
+            return MapDTO(updateService);
         }
 
         public async Task<ServiceDTO?> DeleteAsync(int id)
@@ -120,13 +86,18 @@ namespace Application.Services
             await _serviceRepository.DeleteAsync(id);
             await _serviceRepository.SaveChangesAsync();
 
+            return MapDTO(service);
+        }
+        
+        private static ServiceDTO MapDTO(Service s)
+        {
             return new ServiceDTO
             {
-                Id = service.Id,
-                Title = service.Title,
-                Description = service.Description,
-                Price = service.Price,
-                Duration = service.Duration
+                Id = s.Id,
+                Title = s.Title,
+                Description = s.Description,
+                Price = s.Price,
+                Duration = s.Duration
             };
         }
     }

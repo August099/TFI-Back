@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Services;
+using Domain.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -20,6 +21,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         sql => sql.EnableRetryOnFailure()));
 
 // 2) Repositorios
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IClinicalRecordRepository, ClinicalRecordRepository>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
