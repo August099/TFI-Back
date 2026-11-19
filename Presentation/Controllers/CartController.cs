@@ -45,10 +45,10 @@ namespace Presentation.Controllers
         public async Task<ActionResult<CartDTO>> GetMyCart()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim))
-                return BadRequest("No se pudo identificar al usuario");
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
 
-            var cart = await _cartService.GetOrCreateByClientIdAsync(int.Parse(userIdClaim));
+            var cart = await _cartService.GetOrCreateByClientIdAsync(userId);
             if (cart == null)
                 return NotFound($"No se pudo crear el Carro");
 
