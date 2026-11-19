@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.Models.CartItem;
 
 namespace Application.Models.Cart
 {
@@ -8,5 +6,6 @@ namespace Application.Models.Cart
     {
         public int Id { get; set; }
         public int ClientId { get; set; }
+        public List<CartItemDTO> Items { get; set; } = [];
     }
 }

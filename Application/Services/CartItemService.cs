@@ -3,9 +3,6 @@ using Application.Models.CartItem;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Services
 {
@@ -30,8 +27,11 @@ namespace Application.Services
                 return null;
             return MapDTO(cart);
         }
-        public async Task<CartItemDTO?> AddAsync(CreateCartItemDTO cartItem)
+        public async Task<CartItemDTO?> AddAsync(int cartId, CreateCartItemDTO cartItem)
         {
+            if (cartId <= 0)
+                throw new BadRequestException("El Id del carro no es válido");
+
             if (cartItem.ItemId <= 0)
                 throw new BadRequestException("El Id del Item no es válido");
 
@@ -40,7 +40,7 @@ namespace Application.Services
 
             var newCartItem = new CartItem
             {
-                CartId = cartItem.CartId,
+                CartId = cartId,
                 ItemId = cartItem.ItemId,
                 Quantity = cartItem.Quantity
             };

@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Models.Cart;
+using Application.Models.CartItem;
 using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.IdentityModel.Abstractions;
@@ -12,9 +13,11 @@ namespace Application.Services
     public class CartService : ICartService
     {
         private readonly ICartRepository _cartRepository;
-        public CartService(ICartRepository cartRepository)
+        private readonly ICartItemRepository _cartItemRepository;
+        public CartService(ICartRepository cartRepository, ICartItemRepository cartItemRepository)
         {
             _cartRepository = cartRepository;
+            _cartItemRepository = cartItemRepository;
         }
 
         public async Task<CartDTO?> GetByIdAsync(int id)
@@ -22,11 +25,9 @@ namespace Application.Services
             var cart = await _cartRepository.GetByIdAsync(id);
             if (cart == null)
                 return null;
-            return new CartDTO
-            {
-                Id = cart.Id,
-                ClientId = cart.ClientId
-            };
+
+            var items = await _cartItemRepository.GetByCartIdAsync(cart.Id);
+            return MapDTO(cart, items);
         }
 
         public async Task<CartDTO?> GetOrCreateByClientIdAsync(int clientId)
@@ -43,11 +44,21 @@ namespace Application.Services
                 await _cartRepository.SaveChangesAsync();
             }
 
-            return new CartDTO
-            {
-                Id = cart.Id,
-                ClientId = cart.ClientId
-            };
+            var items = await _cartItemRepository.GetByCartIdAsync(cart.Id);
+            return MapDTO(cart, items);
         }
+
+        private static CartDTO MapDTO(Cart cart, IEnumerable<CartItem> items) => new()
+        {
+            Id = cart.Id,
+            ClientId = cart.ClientId,
+            Items = items.Select(ci => new CartItemDTO
+            {
+                Id = ci.Id,
+                CartId = ci.CartId,
+                ItemId = ci.ItemId,
+                Quantity = ci.Quantity
+            }).ToList()
+        };
     }
 }

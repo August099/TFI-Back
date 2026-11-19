@@ -10,6 +10,6 @@ namespace Application.Interfaces
         Task<List<CartItemDTO>> GetByCartIdAsync(int cartId);
         Task<CartItemDTO?> GetByIdAsync(int id);
         Task<CartItemDTO?> UpdateAsync(CartItemDTO cartItem);
-        Task<CartItemDTO?> AddAsync(CreateCartItemDTO cartItem);
+        Task<CartItemDTO?> AddAsync(int cartId, CreateCartItemDTO cartItem);
     }
 }

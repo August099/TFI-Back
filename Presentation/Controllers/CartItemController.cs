@@ -50,10 +50,7 @@ namespace Presentation.Controllers
             if (getCart == null)
                 return BadRequest($"No se pudo obtener el carrito del usuario con Id:{clientId}");
 
-            // Asignar el Id del carrito al CartItem por si se creo un nuevo carrito
-            cartItem.CartId = getCart.Id;
-
-            var createdCartItem = await _cartItemService.AddAsync(cartItem);
+            var createdCartItem = await _cartItemService.AddAsync(getCart.Id, cartItem);
             if (createdCartItem == null)
                 return BadRequest($"El CartItem con Id:{cartItem.ItemId} no se pudo crear");
 
