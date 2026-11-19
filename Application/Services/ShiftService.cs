@@ -94,8 +94,8 @@ namespace Application.Services
             };
 
             var addedShift = await _shiftRepository.AddAsync(newShift);
-            if (addedShift == null || addedShift.Id == 0) return null;
             await _shiftRepository.SaveChangesAsync();
+            if (addedShift == null || addedShift.Id == 0) return null;
 
             return MapDTO(addedShift);
         }
